@@ -1,66 +1,51 @@
-// Theme Toggle Script
-// Theme Toggle Script
-const toggleCheckbox = document.getElementById('theme-toggle-checkbox');
+// Theme Toggle
+const themeToggleButton = document.getElementById('theme-toggle');
+const themeIcon = themeToggleButton.querySelector('i');
 
-// Function to apply the theme
-const applyTheme = (theme) => {
-    if (theme === 'dark') {
-        document.body.classList.add('dark');
-    } else {
-        document.body.classList.remove('dark');
-    }
-};
-
-// Initialize theme on page load
-const savedTheme = localStorage.getItem('theme') || 'dark'; // Default to dark
-
-applyTheme(savedTheme);
-
-// Set the toggle state based on saved theme
-if (savedTheme === 'dark') {
-    toggleCheckbox.checked = true;
+// Check for saved user preference and set theme; default to dark
+const currentTheme = localStorage.getItem('theme') || 'dark';
+document.documentElement.setAttribute('data-theme', currentTheme);
+if (currentTheme === 'dark') {
+  themeIcon.classList.replace('fa-moon', 'fa-sun');
 } else {
-    toggleCheckbox.checked = false;
+  themeIcon.classList.replace('fa-sun', 'fa-moon');
 }
 
-// Event listener for theme toggle
-toggleCheckbox.addEventListener('change', function() {
-    if (this.checked) {
-        applyTheme('dark');
-        localStorage.setItem('theme', 'dark');
-    } else {
-        applyTheme('light');
-        localStorage.setItem('theme', 'light');
-    }
+themeToggleButton.addEventListener('click', () => {
+  let theme = document.documentElement.getAttribute('data-theme');
+  if (theme === 'dark') {
+    document.documentElement.setAttribute('data-theme', 'light');
+    localStorage.setItem('theme', 'light');
+    themeIcon.classList.replace('fa-sun', 'fa-moon');
+  } else {
+    document.documentElement.setAttribute('data-theme', 'dark');
+    localStorage.setItem('theme', 'dark');
+    themeIcon.classList.replace('fa-moon', 'fa-sun');
+  }
 });
 
-// Hamburger Menu Script
-const hamburger = document.querySelector('.hamburger');
-const navLinks = document.querySelector('.nav-links');
+// Highlight Active Link
+document.querySelectorAll('.nav-links a').forEach(link => {
+  link.addEventListener('click', event => {
+    // Remove active class from all links
+    document.querySelectorAll('.nav-links a').forEach(l => l.classList.remove('active'));
 
-hamburger.addEventListener('click', () => {
-    navLinks.classList.toggle('active');
-    hamburger.classList.toggle('active');
+    // Add active class to the clicked link
+    event.target.classList.add('active');
+
+    // Close menu on mobile
+    const navLinks = document.querySelector('.nav-links');
+    navLinks.classList.remove('active');
+  });
 });
 
-// Active Link Highlighting
-const sections = document.querySelectorAll('section');
-const navLi = document.querySelectorAll('.nav-links li a');
+// Mobile Menu Toggle
+const menuToggleButton = document.getElementById('menu-toggle');
+const navLinks = document.querySelectorAll('.nav-link');
+const currentPage = document.body.dataset.page; // Add `data-page` to body in each HTML file
 
-window.addEventListener('scroll', () => {
-    let current = '';
-
-    sections.forEach(section => {
-        const sectionTop = section.offsetTop - 80; // Adjust based on navbar height
-        if (pageYOffset >= sectionTop) {
-            current = section.getAttribute('id');
-        }
-    });
-
-    navLi.forEach(a => {
-        a.classList.remove('active');
-        if (a.getAttribute('href') === `#${current}`) {
-            a.classList.add('active');
-        }
-    });
+navLinks.forEach(link => {
+  if (link.dataset.page === currentPage) {
+    link.classList.add('active');
+  }
 });
