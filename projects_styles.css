@@ -1,0 +1,53 @@
+/* Project Page Styles */
+.projects-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 1.5rem;
+    margin-top: 2rem;
+}
+
+.project-card {
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    width: 300px;
+    overflow: hidden;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s ease-in-out;
+}
+
+.project-card:hover {
+    transform: scale(1.05);
+}
+
+.project-image {
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+}
+
+.project-info {
+    padding: 1rem;
+    text-align: center;
+}
+
+.project-info h3 {
+    color: #007bff;
+    margin-bottom: 0.5rem;
+}
+
+.github-link {
+    display: inline-block;
+    margin-top: 1rem;
+    color: #333;
+    text-decoration: none;
+    font-size: 1rem;
+}
+
+.github-link i {
+    margin-right: 0.5rem;
+}
+
+.github-link:hover {
+    color: #007bff;
+}

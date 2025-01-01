@@ -31,14 +31,16 @@
     width: 55%;
     margin: 0 auto;
   }
+
+  /* Navifation bar */
   
   nav {
     border-bottom: 2px solid var(--border-color);
     padding: 0.5rem 1rem;
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
     justify-content: space-between;
-    position: sticky;
     top: 0;
     z-index: 1000;
   }
@@ -100,12 +102,42 @@
     color: var(--text-color);
   }
   
+  
   /* Mobile styles */
   @media (max-width: 768px) {
+    body{
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    transition: background-color 0.3s ease, color 0.3s ease;
+    border: 100px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    width: 100%;
+    margin: 0 auto;
+  }
+  .fixed-top {
+    position: fixed;
+    left: 0;
+    right: 0;
+    top: 0;
+    z-index: 1000;
+  }
+  .false-div-top {
+    height: 3rem;
+  }
+
+  .nav-bar {
+    opacity: .90;
+    background-color: var(--bg-color);
+  }
     .nav-links {
       display: none;
       flex-direction: column;
-      position: absolute;
+      position: relative;
       top: 70px;
       right: 20px;
       background-color: var(--bg-color);
@@ -123,69 +155,12 @@
     }
   }
   
-  /* Project Page Styles */
-.projects-container {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 1.5rem;
-    margin-top: 2rem;
-}
-
-.project-card {
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    width: 300px;
-    overflow: hidden;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    transition: transform 0.2s ease-in-out;
-}
-
-.project-card:hover {
-    transform: scale(1.05);
-}
-
-.project-image {
-    width: 100%;
-    height: 180px;
-    object-fit: cover;
-}
-
-.project-info {
-    padding: 1rem;
-    text-align: center;
-}
-
-.project-info h3 {
-    color: #007bff;
-    margin-bottom: 0.5rem;
-}
-
-.github-link {
-    display: inline-block;
-    margin-top: 1rem;
-    color: #333;
-    text-decoration: none;
-    font-size: 1rem;
-}
-
-.github-link i {
-    margin-right: 0.5rem;
-}
-
-.github-link:hover {
-    color: #007bff;
-}
-
 /* Intro */
-
 .container.intro {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    max-width: 1200px;
     margin: auto;
-    padding: 20px;
     flex-wrap: wrap;
 }
 
@@ -217,14 +192,16 @@
     align-items: center;
     color: var(--global-text-color);
     transition-property: all .2s ease-in-out;
-  }
+}
+
 .social {
   display: flex;
   justify-content: center;
   align-items: center;
   margin-bottom: 2rem;
 }
-  .icon {
+
+.icon {
     color: inherit;
     font-size: 4.5rem; /* Adjust size of the icon */
     width: 70px; /* Custom width */
@@ -257,10 +234,6 @@ th {
 .news {
   display: flex;
   flex-direction: column;
-  max-width: 1200px;
-      
-    padding: 20px;
-    flex-wrap: wrap;
 }
 
 .link-1 {
@@ -271,16 +244,15 @@ th {
   text-decoration: underline;
 }
 
-/* Footer*/ 
 /* Footer */
 .footer {
   text-align: center;
-  
+  background-color: var(--bg-color);
   font-size: 0.9rem;
   position: fixed;
   bottom: 0;
   left: 0;
-  margin-top: 1.8rem;
+  margin-top: 18rem;
   border-top: 1px solid var(--text-color);
   width: 100%; /* Full width of the viewport */
   box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1); /* Adds a subtle shadow */
@@ -296,6 +268,11 @@ th {
   color: #ffa733; /* Slightly lighter hover effect */
 }
 
+.false-div{
+  height: 3rem;
+}
+
+
 /* Buttons */ 
 .button-59 {
   align-items: center;
@@ -309,11 +286,12 @@ th {
   font-family: Inter,sans-serif;
   font-size: 16px;
   font-weight: 600;
-  height: 48px;
+  height: 35px;
   justify-content: center;
   letter-spacing: -.8px;
   line-height: 24px;
-  min-width: 140px;
+  width: 15px;
+  min-width: 70px;
   outline: 0;
   padding: 0 17px;
   text-align: center;
@@ -324,10 +302,6 @@ th {
   touch-action: manipulation;
 }
 
-.button-59:focus {
-  color: #171e29;
-}
-
 .button-59:hover {
   border-color: #ff9800;
   color: #ff9800;
@@ -336,6 +310,13 @@ th {
 
 @media (min-width: 768px) {
   .button-59 {
-    min-width: 170px;
+    min-width: 100px;
   }
+}
+
+/* publications */
+
+.publication-image {
+  height: 150px;
+  width: 300px;
 }

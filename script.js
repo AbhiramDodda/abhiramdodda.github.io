@@ -39,8 +39,7 @@ document.querySelectorAll('.nav-links a').forEach(link => {
   });
 });
 
-// Mobile Menu Toggle
-const menuToggleButton = document.getElementById('menu-toggle');
+
 const navLinks = document.querySelectorAll('.nav-link');
 const currentPage = document.body.dataset.page; // Add `data-page` to body in each HTML file
 
@@ -49,3 +48,11 @@ navLinks.forEach(link => {
     link.classList.add('active');
   }
 });
+
+// Menu Toggle Functionality
+const menuToggle = document.getElementById("menu-toggle");
+
+menuToggle.addEventListener("click", () => {
+  navLinks.classList.toggle("active");
+});
+
