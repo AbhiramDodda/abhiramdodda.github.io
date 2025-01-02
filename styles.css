@@ -432,19 +432,18 @@ th {
 #publications {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 2rem 1rem;
+  padding: 0.5rem 0.5rem;
 }
 
 #publications h1 {
-  text-align: center;
-  margin-bottom: 2rem;
+  text-align: center;;
   font-size: 2.5rem;
 }
 
 /* Publication table styles */
 #publications table {
   width: 100%;
-  margin-bottom: 3rem;
+  margin-bottom: 1rem;
   border-collapse: separate;
   border-spacing: 0 1rem;
 }
@@ -457,10 +456,6 @@ th {
   margin-right: 1.5rem;
 }
 
-.publication-details {
-  padding: 1rem 0;
-}
-
 .publication-details h2 {
   font-size: 1.4rem;
   margin-bottom: 0.8rem;
@@ -469,7 +464,7 @@ th {
 
 .publication-details p {
   margin-bottom: 0.5rem;
-  line-height: 1.6;
+  line-height: 1.2;
 }
 
 /* Button styles */
@@ -487,7 +482,7 @@ th {
 
 .content p {
   padding: 1rem;
-  line-height: 1.6;
+  line-height: 1.2;
 }
 
 /* Mobile styles */
