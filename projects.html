@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name='keywords' content='portfolio, abhiram, dodda, abhiram dodda, portfolio website, personal website'>
+  <link rel="icon" type="image/png" sizes="32x32" href="data/img/ad.png">
+  <meta name='author' content='Abhiram Dodda'>
+  <title>Projects | Abhiram</title>
+  <!-- Font Awesome -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+  <!-- Academicons -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/academicons/1.9.2/css/academicons.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body data-page="projects">
+  <header>
+    <nav class="nav-bar fixed-top">
+      <div class="container nav-container">
+        <button id="menu-toggle" aria-label="Toggle Menu" aria-expanded="false" class="toggle">
+          <i class="fas fa-bars"></i>
+        </button>
+        <ul class="nav-links">
+          <li><a href="index.html" class="nav-link" data-page="home">About</a></li>
+          <li><a href="publications.html" class="nav-link" data-page="publications">Publications</a></li>
+          <li><a href="projects.html" class="nav-link active" data-page="projects">Projects</a></li>
+          <li><a href="experience.html" class="nav-link" data-page="experience">Experience</a></li>
+          <li><a href="blog.html" class="nav-link" data-page="blog">Blog</a></li>
+          <li><a href="activities.html" class="nav-link" data-page="activities">Activities</a></li>
+          <li><a href="cv.html" class="nav-link" data-page="cv">CV</a></li>
+        </ul>
+        <button id="theme-toggle" aria-label="Toggle Theme">
+          <i class="fas fa-sun"></i>
+        </button>
+      </div>
+    </nav>
+  </header>
+
+  <main>
+    <div class="false-div-top"></div>
+    <section id="projects">
+      <h1>Projects</h1>
+      
+      <div class="projects-grid">
+        <!-- <div class="project-card">
+          <div class="project-image">
+            <img src="data/img/publication_1" alt="Smart Glasses Project" loading="lazy">
+          </div>
+          <div class="project-content">
+            <div class="project-meta">
+              <span class="project-category">Computer Vision</span>
+              <span class="project-date">2024</span>
+            </div>
+            <h2>Smart Glasses for Visually Impaired</h2>
+            <p>A wearable device that uses computer vision to assist visually impaired individuals in navigation and object recognition. Features include real-time obstacle detection, text reading, and currency recognition.</p>
+            <div class="project-tech-stack">
+              <span>Python</span>
+              <span>OpenCV</span>
+              <span>TensorFlow</span>
+              <span>Raspberry Pi</span>
+            </div>
+            <div class="project-links">
+              <a href="https://github.com/username/project" target="_blank" class="project-link">
+                <i class="fab fa-github"></i> Code
+              </a>
+              <a href="#" target="_blank" class="project-link">
+                <i class="fas fa-external-link-alt"></i> Demo
+              </a>
+            </div>
+          </div>
+        </div> -->
+
+        <div class="project-card">
+          <div class="project-image">
+            <img src="data/img/publication_1" alt="Retinal Disease Detection" loading="lazy">
+          </div>
+          <div class="project-content">
+            <div class="project-meta">
+              <span class="project-category">Deep Learning</span>
+              <span class="project-date">2023</span>
+            </div>
+            <h2>Retinal Disease Detection System</h2>
+            <p>An ensemble-based deep learning system for detecting various retinal diseases from OCT images. Combines multiple CNN architectures to achieve high accuracy in disease classification.</p>
+            <div class="project-tech-stack">
+              <span>TensorFlow</span>
+              <span>scikit-learn</span>
+              <span>NumPy</span>
+              <span>Pandas</span>
+            </div>
+            <div class="project-links">
+              <a href="https://github.com/AbhiramDodda/Eye-disease-using-OCT" target="_blank" class="project-link">
+                <i class="fab fa-github"></i> Code
+              </a>
+              <a href="https://scholar.google.com/citations?view_op=view_citation&hl=en&user=Y5uj28MAAAAJ&citation_for_view=Y5uj28MAAAAJ:2osOgNQ5qMEC" target="_blank" class="project-link">
+                <i class="fas fa-external-link-alt"></i> Paper
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <div class="project-card">
+          <div class="project-image">
+            <img src="data/img/plant_disease_project.png" alt="Plant Disease Detection" loading="lazy">
+          </div>
+          <div class="project-content">
+            <div class="project-meta">
+              <span class="project-category">Machine Learning</span>
+              <span class="project-date">2023</span>
+            </div>
+            <h2>Two-Stage Plant Disease Detection</h2>
+            <p>A novel two-stage deep learning framework for detecting plant diseases from leaf images. First stage identifies plant species, second stage diagnoses specific diseases.</p>
+            <div class="project-tech-stack">
+              <span>TensorFlow</span>
+              <span>Keras</span>
+              <span>OpenCV</span>
+            </div>
+            <div class="project-links">
+              <a href="https://github.com/AbhiramDodda/Two-stage-plant-diesease-detection" target="_blank" class="project-link">
+                <i class="fab fa-github"></i> Code
+              </a>
+              <a href="https://scholar.google.com/citations?view_op=view_citation&hl=en&user=Y5uj28MAAAAJ&citation_for_view=Y5uj28MAAAAJ:qjMakFHDy7sC" target="_blank" class="project-link">
+                <i class="fas fa-external-link-alt"></i> Demo
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="false-div"></div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-content">
+      <p>&copy; 2025 Abhiram Dodda. All rights reserved. Hosted by <a href="https://pages.github.com/" target="_blank">GitHub Pages</a>. Last updated: March 21, 2025.</p>
+    </div>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
