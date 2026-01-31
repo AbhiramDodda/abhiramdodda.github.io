@@ -323,6 +323,7 @@ body {
   width: 100%;
   margin-top: 18rem;
   box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1);
+  z-index: 10;
 }
 
 .footer-content {
@@ -1311,6 +1312,8 @@ body::before {
 max-width: 1200px;
 margin: 0 auto;
 padding: 2rem 1rem;
+position: relative;
+overflow: visible;
 }
 
 #projects h1 {
@@ -1478,4 +1481,51 @@ font-size: 1rem;
   font-size: 0.8rem;
   padding: 0.2rem 0.6rem;
 }
+}
+
+/* Floating background shapes animation for projects page */
+.floating-shapes {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.floating-shape {
+  position: absolute;
+  background: linear-gradient(135deg, var(--accent) 0%, rgba(225, 106, 84, 0.5) 100%);
+  animation: float-drift 20s ease-in-out infinite;
+  will-change: transform;
+}
+
+.projects-grid {
+  position: relative;
+  z-index: 1;
+}
+
+@keyframes float-drift {
+  0%, 100% {
+    transform: translate(0, 0) rotate(0deg);
+  }
+  25% {
+    transform: translate(30px, -30px) rotate(90deg);
+  }
+  50% {
+    transform: translate(-20px, 20px) rotate(180deg);
+  }
+  75% {
+    transform: translate(40px, 10px) rotate(270deg);
+  }
+}
+
+/* Reduce motion for accessibility */
+@media (prefers-reduced-motion: reduce) {
+  .floating-shape {
+    animation: none;
+    opacity: 0.02 !important;
+  }
 }

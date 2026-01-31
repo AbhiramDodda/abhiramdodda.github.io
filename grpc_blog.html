@@ -1,0 +1,437 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>gRPC — A Practical, Illustrated Guide</title>
+  <style>
+    :root{
+      --bg:#0f1724;
+      --card:#0b1220;
+      --accent:#7dd3fc;
+      --muted:#9ca3af;
+      --glass: rgba(255,255,255,0.03);
+      --mono: "SFMono-Regular", Menlo, Monaco, "Courier New", monospace;
+    }
+    body{
+      margin:0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+      background: linear-gradient(180deg, #071021 0%, #081422 100%);
+      color:#e6eef6;
+      line-height:1.6;
+      padding:32px;
+    }
+    .container{ max-width:1000px; margin:0 auto; }
+    header{ display:flex; align-items:center; gap:16px; margin-bottom:22px; }
+    header h1{ margin:0; font-size:28px; }
+    header p{ margin:0; color:var(--muted); }
+    .hero{
+      background:linear-gradient(90deg, rgba(125,211,252,0.06), rgba(99,102,241,0.03));
+      border-radius:12px;
+      padding:18px;
+      box-shadow: 0 6px 30px rgba(2,6,23,0.6);
+      margin-bottom:18px;
+    }
+    .section{ background:var(--card); border-radius:10px; padding:20px; margin-bottom:18px; box-shadow: 0 3px 10px rgba(0,0,0,0.4); }
+    h2{ margin-top:0; color: #cfeffd; }
+    h3{ color:#d6f7ff; }
+    .muted{ color:var(--muted); }
+    pre{ background:var(--glass); padding:12px; border-radius:8px; overflow:auto; font-family:var(--mono); font-size:13px; color:#dbeafe; }
+    code{ font-family:var(--mono); color:#f8fafc; }
+    .note{ background: rgba(125,211,252,0.03); border-left:4px solid var(--accent); padding:10px; border-radius:6px; color:var(--muted); }
+    ul{ margin-top:8px; }
+    .diagram{ display:flex; gap:12px; flex-wrap:wrap; margin:12px 0; }
+    .svg-card{ background:rgba(255,255,255,0.02); padding:12px; border-radius:8px; flex:1 1 320px; }
+    footer{ text-align:center; color:var(--muted); padding:12px; margin-top:18px; }
+    .toc{ background:rgba(255,255,255,0.02); padding:12px; border-radius:8px; color:var(--muted); }
+    .btn{ display:inline-block; padding:8px 12px; background:var(--accent); color:#032; font-weight:600; border-radius:8px; text-decoration:none; margin-right:8px; }
+    .small{ font-size:13px; color:var(--muted); }
+    .callout{ border-left:4px solid #60a5fa; padding-left:10px; margin:10px 0; }
+    .code-meta{ margin-bottom:8px; color:var(--muted); font-size:13px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div>
+        <h1>gRPC — A Practical, Illustrated Guide</h1>
+        <p class="muted">A friendly, hands-on blog with diagrams and code snippets (Proto + Go). Save the repo, run the examples, and adapt them to your projects.</p>
+      </div>
+    </header>
+
+    <section class="hero section">
+      <h2>What you’ll get from this post</h2>
+      <ul>
+        <li>Clear explanation of gRPC core concepts and 4 RPC types.</li>
+        <li>Illustrations (inline SVG) that show request flow and architecture.</li>
+        <li>Working code snippets: `.proto` + Go server/client (unary + streaming).</li>
+        <li>Advanced tips: deadlines, metadata, interceptors, TLS, and best practices.</li>
+        <li>A short case study: distributed Binary Search Tree (BST) using gRPC.</li>
+      </ul>
+      <p class="note small">Tip: Keep a GitHub repo beside the blog so readers can clone and run examples. Link it in the "Resources" section.</p>
+    </section>
+
+    <section class="section">
+      <h2>Table of contents</h2>
+      <div class="toc">
+        <ol>
+          <li>Intro — Why gRPC?</li>
+          <li>Core concepts</li>
+          <li>Communication types (with diagrams)</li>
+          <li>Hands-on: build a simple service (Proto → Go)</li>
+          <li>Advanced features & best practices</li>
+          <li>Case study: Distributed BST</li>
+          <li>Wrap up & resources</li>
+        </ol>
+      </div>
+    </section>
+
+    <!-- INTRO -->
+    <section class="section">
+      <h2>1. Intro — Why gRPC?</h2>
+      <p>gRPC is a high-performance RPC framework originally developed by Google. It uses <strong>Protocol Buffers</strong> (binary serialization), runs over <strong>HTTP/2</strong>, and supports multiple languages. In short: faster payloads, streaming, and strong typing.</p>
+
+      <h3>Basic points — when to choose gRPC</h3>
+      <ul>
+        <li>Use gRPC for microservices that need low-latency and high-throughput communication.</li>
+        <li>Great for polyglot systems where one .proto file generates code for multiple languages.</li>
+        <li>Not ideal for public-facing browser APIs (unless you use gRPC-Web).</li>
+      </ul>
+
+      <div class="diagram">
+        <div class="svg-card">
+          <h4 class="small">REST vs gRPC (timeline)</h4>
+          <svg width="100%" height="140" viewBox="0 0 800 140" xmlns="http://www.w3.org/2000/svg">
+            <rect x="0" y="0" width="800" height="140" rx="8" fill="rgba(255,255,255,0.02)"/>
+            <text x="18" y="22" fill="#bfe9ff" font-size="13">REST (JSON)</text>
+            <line x1="18" y1="36" x2="780" y2="36" stroke="rgba(255,255,255,0.03)"/>
+            <circle cx="100" cy="70" r="8" fill="#60a5fa" /><text x="120" y="75" fill="#a7f3d0" font-size="12">Text JSON (larger)</text>
+            <circle cx="300" cy="70" r="8" fill="#60a5fa" /><text x="320" y="75" fill="#a7f3d0" font-size="12">Server</text>
+            <text x="18" y="108" fill="#cfeffd" font-size="13">gRPC (Proto + HTTP/2)</text>
+            <line x1="18" y1="116" x2="780" y2="116" stroke="rgba(255,255,255,0.03)"/>
+            <circle cx="100" cy="150" r="0" fill="transparent"/>
+            <circle cx="100" cy="140" r="8" fill="#7dd3fc"/><text x="120" y="145" fill="#a7f3d0" font-size="12">Binary Proto (compact)</text>
+            <circle cx="300" cy="140" r="8" fill="#7dd3fc"/><text x="320" y="145" fill="#a7f3d0" font-size="12">Server (multiplexing)</text>
+          </svg>
+          <p class="small muted">gRPC sends compact binary messages and benefits from HTTP/2 features (multiplexing, header compression).</p>
+        </div>
+
+        <div class="svg-card">
+          <h4 class="small">How .proto → code works</h4>
+          <svg width="100%" height="140" viewBox="0 0 420 140" xmlns="http://www.w3.org/2000/svg">
+            <rect x="0" y="0" width="420" height="140" rx="8" fill="rgba(255,255,255,0.02)"/>
+            <rect x="18" y="18" width="120" height="40" rx="6" fill="#082033"/><text x="28" y="44" fill="#7dd3fc">service.proto</text>
+            <path d="M138,38 L198,38" stroke="#7dd3fc" stroke-width="2" />
+            <rect x="198" y="10" width="200" height="60" rx="6" fill="#082033"/><text x="208" y="40" fill="#7dd3fc">`protoc` generates</text>
+            <text x="208" y="60" fill="#cfeffd" font-size="12">Go/Python/Java stubs</text>
+          </svg>
+          <p class="small muted">We write `.proto` once, generate typed stubs for client and server in many languages.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- CORE CONCEPTS -->
+    <section class="section">
+      <h2>2. Core concepts</h2>
+      <h3>Protocol Buffers</h3>
+      <p>Protobuf defines messages with fields and types. It's compact, forward/backward compatible when used carefully, and strongly typed.</p>
+      <pre><code>// example.proto (minimal)
+syntax = "proto3";
+
+package example;
+
+service Greeter {
+  // Unary RPC
+  rpc SayHello (HelloRequest) returns (HelloReply);
+}
+
+message HelloRequest {
+  string name = 1;
+}
+
+message HelloReply {
+  string message = 1;
+}
+</code></pre>
+
+      <h3>Generate code</h3>
+      <p class="small muted">Command (Go):</p>
+      <pre><code>protoc --go_out=. --go-grpc_out=. example.proto</code></pre>
+
+      <h3>Stubs & runtime</h3>
+      <p>Generated code provides server and client stubs. The runtime (gRPC library) handles HTTP/2, serialization, etc.</p>
+    </section>
+
+    <!-- COMMUNICATION TYPES -->
+    <section class="section">
+      <h2>3. RPC types — the 4 flavors</h2>
+
+      <div class="callout">
+        <strong>Quick cheat-sheet</strong>:
+        <ul>
+          <li><strong>Unary</strong> — request & response (like normal function call).</li>
+          <li><strong>Server streaming</strong> — server sends stream of responses for one request.</li>
+          <li><strong>Client streaming</strong> — client streams many requests, one response.</li>
+          <li><strong>Bidirectional streaming</strong> — both sides stream independently.</li>
+        </ul>
+      </div>
+
+      <h3>Illustration: Unary vs Streaming</h3>
+      <div class="diagram">
+        <div class="svg-card">
+          <svg width="100%" height="120" viewBox="0 0 600 120" xmlns="http://www.w3.org/2000/svg">
+            <rect x="0" y="0" width="600" height="120" rx="8" fill="rgba(255,255,255,0.02)"/>
+            <text x="20" y="22" fill="#bfe9ff">Unary</text>
+            <line x1="60" y1="34" x2="540" y2="34" stroke="rgba(255,255,255,0.03)"/>
+            <rect x="60" y="40" width="120" height="36" rx="6" fill="#082033"/><text x="74" y="62" fill="#87f3ff">Client</text>
+            <rect x="420" y="40" width="120" height="36" rx="6" fill="#082033"/><text x="434" y="62" fill="#87f3ff">Server</text>
+            <path d="M180,58 L420,58" stroke="#7dd3fc" stroke-width="3" marker-end="url(#arrow)"/>
+            <path d="M420,76 L180,76" stroke="#7dd3fc" stroke-width="3" marker-end="url(#arrow)"/>
+            <defs><marker id="arrow" markerWidth="10" markerHeight="10" refX="6" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#7dd3fc"/></marker></defs>
+            <text x="250" y="96" fill="#9ecbfd" font-size="12">request → response</text>
+          </svg>
+        </div>
+
+        <div class="svg-card">
+          <svg width="100%" height="160" viewBox="0 0 600 160" xmlns="http://www.w3.org/2000/svg">
+            <rect x="0" y="0" width="600" height="160" rx="8" fill="rgba(255,255,255,0.02)"/>
+            <text x="20" y="22" fill="#bfe9ff">Server streaming</text>
+            <rect x="60" y="40" width="120" height="36" rx="6" fill="#082033"/><text x="74" y="62" fill="#87f3ff">Client</text>
+            <rect x="420" y="40" width="120" height="36" rx="6" fill="#082033"/><text x="434" y="62" fill="#87f3ff">Server</text>
+            <path d="M180,58 L420,58" stroke="#7dd3fc" stroke-width="3" marker-end="url(#arrow2)"/>
+            <path d="M420,58 L180,82" stroke="#7dd3fc" stroke-width="3" marker-end="url(#arrow2)"/>
+            <path d="M420,58 L180,106" stroke="#7dd3fc" stroke-width="3" marker-end="url(#arrow2)"/>
+            <defs><marker id="arrow2" markerWidth="10" markerHeight="10" refX="6" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#7dd3fc"/></marker></defs>
+            <text x="250" y="136" fill="#9ecbfd" font-size="12">one request, many responses</text>
+          </svg>
+        </div>
+      </div>
+    </section>
+
+    <!-- HANDS-ON -->
+    <section class="section">
+      <h2>4. Hands-on: build a small service (Go)</h2>
+      <p>We'll build a minimal Key-Value service showing a Unary RPC and a Server Stream that lists keys.</p>
+
+      <h3>1) Define the proto</h3>
+      <pre><code>// kv.proto
+syntax = "proto3";
+package kv;
+
+service KV {
+  rpc Put (PutRequest) returns (PutResponse);
+  rpc Get (GetRequest) returns (GetResponse);
+  rpc ListKeys (ListKeysRequest) returns (stream ListKeysResponse);
+}
+
+message PutRequest { string key = 1; string value = 2; }
+message PutResponse { bool ok = 1; }
+
+message GetRequest { string key = 1; }
+message GetResponse { string value = 1; bool found = 2; }
+
+message ListKeysRequest {}
+message ListKeysResponse { string key = 1; }
+</code></pre>
+
+      <p class="code-meta small muted">Generate Go code:</p>
+      <pre><code>protoc --go_out=. --go-grpc_out=. kv.proto</code></pre>
+
+      <h3>2) Minimal Go server (core parts)</h3>
+      <p class="small muted">This uses an in-memory map (thread-safe via a mutex). Real systems would use persistence or a distributed store.</p>
+      <pre><code>package main
+
+import (
+  "context"
+  "log"
+  "net"
+  "sync"
+
+  pb "example.com/kv/kvpb"
+  "google.golang.org/grpc"
+)
+
+type server struct{
+  pb.UnimplementedKVServer
+  mu sync.RWMutex
+  store map[string]string
+}
+
+func newServer() *server { return &server{store: make(map[string]string)} }
+
+func (s *server) Put(ctx context.Context, req *pb.PutRequest) (*pb.PutResponse, error) {
+  s.mu.Lock(); s.store[req.Key] = req.Value; s.mu.Unlock()
+  return &pb.PutResponse{Ok:true}, nil
+}
+
+func (s *server) Get(ctx context.Context, req *pb.GetRequest) (*pb.GetResponse, error) {
+  s.mu.RLock(); v, ok := s.store[req.Key]; s.mu.RUnlock()
+  return &pb.GetResponse{Value:v, Found:ok}, nil
+}
+
+func (s *server) ListKeys(req *pb.ListKeysRequest, stream pb.KV_ListKeysServer) error {
+  s.mu.RLock()
+  keys := make([]string,0,len(s.store))
+  for k := range s.store { keys = append(keys,k) }
+  s.mu.RUnlock()
+  for _, k := range keys {
+    if err := stream.Send(&pb.ListKeysResponse{Key:k}); err != nil { return err }
+  }
+  return nil
+}
+
+func main(){
+  lis, _ := net.Listen("tcp", ":50051")
+  grpcServer := grpc.NewServer()
+  pb.RegisterKVServer(grpcServer, newServer())
+  log.Println("kv server running :50051")
+  grpcServer.Serve(lis)
+}</code></pre>
+
+      <h3>3) Minimal Go client examples</h3>
+      <pre><code>conn, _ := grpc.Dial("localhost:50051", grpc.WithInsecure())
+defer conn.Close()
+c := pb.NewKVClient(conn)
+
+ctx := context.Background()
+c.Put(ctx, &pb.PutRequest{Key:"name", Value:"abhiram"})
+resp, _ := c.Get(ctx, &pb.GetRequest{Key:"name"})
+log.Println("value:", resp.Value)
+
+// List keys (server streaming)
+stream, _ := c.ListKeys(ctx, &pb.ListKeysRequest{})
+for {
+  item, err := stream.Recv()
+  if err == io.EOF { break }
+  log.Println("key:", item.Key)
+}</code></pre>
+
+      <p class="note">Basic points: always handle errors, add context timeouts, and close connections (defer conn.Close()). For production, use TLS and graceful shutdowns.</p>
+    </section>
+
+    <!-- ADVANCED -->
+    <section class="section">
+      <h2>5. Advanced features & best practices</h2>
+
+      <h3>Deadlines & Cancellation</h3>
+      <p>Use `context.WithTimeout` on client calls. Server can read context and stop work early.</p>
+      <pre><code>ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+defer cancel()
+resp, err := client.SomeRPC(ctx, req)
+</code></pre>
+
+      <h3>Metadata (headers & trailers)</h3>
+      <p>Metadata → like HTTP headers. Useful for auth tokens, tracing IDs.</p>
+      <pre><code>// send metadata from client
+md := metadata.New(map[string]string{"x-trace-id":"123"})
+ctx := metadata.NewOutgoingContext(context.Background(), md)
+client.Do(ctx, req)</code></pre>
+
+      <h3>Interceptors</h3>
+      <p>Interceptors let you add middleware: logging, auth, retries. Use unary and stream interceptors.</p>
+      <h3>TLS</h3>
+      <p>Always use TLS in production. For tests you can use self-signed certs.</p>
+
+      <h3>Performance tips</h3>
+      <ul>
+        <li>Prefer streaming for large/persistent flows to avoid repeated handshake overhead.</li>
+        <li>Batch small messages where possible.</li>
+        <li>Monitor latency and tune keepalive settings for HTTP/2.</li>
+      </ul>
+
+      <h3>Common pitfalls</h3>
+      <ul>
+        <li>Not handling context cancellation correctly (leaking goroutines).</li>
+        <li>Using proto field numbers incorrectly — don’t renumber existing fields.</li>
+        <li>Exposing internal services directly to browsers without gRPC-Web or a proxy.</li>
+      </ul>
+    </section>
+
+    <!-- CASE STUDY -->
+    <section class="section">
+      <h2>6. Case study — Distributed Binary Search Tree (BST)</h2>
+      <p>Here’s a compact conceptual design that maps to your earlier idea: each BST node runs as a gRPC server and forwards requests to its children. This is a learning project — not production-ready (no fault tolerance, no replication).</p>
+
+      <h3>Proto sketch</h3>
+      <pre><code>// distributed_bst.proto
+syntax = "proto3";
+package dbst;
+
+service TreeNode {
+  rpc Insert (InsertReq) returns (InsertResp);
+  rpc Search (SearchReq) returns (SearchResp);
+  rpc Ping (Empty) returns (Empty);
+}
+
+message Empty {}
+
+message InsertReq { int32 value = 1; string left_addr = 2; string right_addr = 3; }
+message InsertResp { string msg = 1; }
+
+message SearchReq { int32 value = 1; }
+message SearchResp { bool found = 1; string location = 2; }
+</code></pre>
+
+      <h3>Design notes — basic points</h3>
+      <ul>
+        <li>Each node knows only its value and the network address of its left/right child (if any).</li>
+        <li>Root receives client requests; it forwards to children via gRPC.</li>
+        <li>To actually spawn nodes you can: (a) run separate processes, or (b) run nodes as goroutines but expose separate ports.</li>
+        <li>For durability you'd persist the node state; for availability you'd replicate nodes (Raft/consensus).</li>
+      </ul>
+
+      <h3>Example: Insert flow (high-level)</h3>
+      <ol>
+        <li>Client → root.Insert(42)</li>
+        <li>If root.value == 42 → return already exists.</li>
+        <li>Else if 42 &lt; root.value and left exists → root forwards RPC to left node address.</li>
+        <li>If left doesn't exist → root spawns new node process (or instructs a node manager) and connects it as left child.</li>
+      </ol>
+
+      <p class="small muted">This design teaches networking, RPCs, and distributed thinking. If you want, we can add a sample repo that actually launches multiple node processes on different ports and wire them together.</p>
+    </section>
+
+    <!-- CONCLUSION -->
+    <section class="section">
+      <h2>7. Wrap up — What to include in your blog post to show expertise</h2>
+      <ul>
+        <li>Concise theory + plenty of examples (proto + working code).</li>
+        <li>Benchmarks: small experiment comparing JSON vs Proto payload size & latency.</li>
+        <li>Real-world patterns: service discovery, load balancing, mTLS.</li>
+        <li>Case study from your projects (e.g., the Distributed BST) that ties concepts to practice.</li>
+        <li>Clear next steps for readers (clone, run, experiment).</li>
+      </ul>
+
+      <p class="note">Human touch: tell a short story — why you started using gRPC, one bug you ran into, and how you solved it. Readers love concrete lessons.</p>
+
+      <h3>Resources & sample commands</h3>
+      <p class="small muted">Commands you'll use repeatedly:</p>
+      <pre><code>protoc --go_out=. --go-grpc_out=. service.proto
+go run ./server
+go run ./client
+# For TLS, generate certs or use Let's Encrypt for public services
+</code></pre>
+
+      <p>Suggested repo layout for readers you share code with:</p>
+      <pre><code>grpc-blog/
+├─ proto/kv.proto
+├─ go/kv/server/main.go
+├─ go/kv/client/main.go
+└─ docs/benchmarks.md
+</code></pre>
+
+      <p>If you want, I can also:</p>
+      <ul>
+        <li>Generate a complete GitHub-ready repo with `go.mod` and runnable examples.</li>
+        <li>Produce PNG/SVG illustrations with nicer visuals to embed in the blog.</li>
+        <li>Write a short "how I fixed a gRPC bug" anecdote you can paste into the post.</li>
+      </ul>
+    </section>
+
+    <footer>
+      <p class="small muted">Thanks for reading — if you like, tell me which part you'd like expanded (full repo, TLS example, interceptor patterns, or a produced image pack) and I'll generate it.</p>
+    </footer>
+
+  </div>
+</body>
+</html>
