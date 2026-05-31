@@ -1,6 +1,6 @@
 // Configuration - Update this once for all pages
 const SITE_CONFIG = {
-  lastUpdated: 'May 27, 2026',
+  lastUpdated: 'May 31, 2026',
   copyrightYear: '2026'
 };
 
@@ -167,3 +167,151 @@ document.addEventListener("DOMContentLoaded", () => {
     
     console.log(`Created ${shapes.length} floating shapes`);
   }
+
+// ===== BACKGROUND ANIMATIONS =====
+// Uses z-index:-1 canvas element so it can never block clicks
+
+document.addEventListener('DOMContentLoaded', () => {
+  const page = document.body.getAttribute('data-page');
+  if (page === 'publications') initPublicationsAnim();
+  else if (page === 'blog')    initBlogAnim();
+  else if (page === 'activities') initActivitiesAnim();
+});
+
+function makeCanvas() {
+  const c = document.createElement('canvas');
+  c.className = 'bg-canvas';
+  c.width  = window.innerWidth;
+  c.height = window.innerHeight;
+  document.body.appendChild(c);
+  window.addEventListener('resize', () => {
+    c.width  = window.innerWidth;
+    c.height = window.innerHeight;
+  });
+  return c;
+}
+
+/* --- Publications: drifting constellation --- */
+function initPublicationsAnim() {
+  const c = makeCanvas();
+  const ctx = c.getContext('2d');
+  const N = 22, DIST = 160;
+  const color = [225, 106, 84];
+
+  const nodes = Array.from({length: N}, () => ({
+    x: Math.random() * c.width,
+    y: Math.random() * c.height,
+    vx: (Math.random() - 0.5) * 0.4,
+    vy: (Math.random() - 0.5) * 0.4,
+    r: Math.random() * 2 + 1.5,
+  }));
+
+  function tick() {
+    c.width = c.width; // clear
+    nodes.forEach(n => {
+      n.x += n.vx; n.y += n.vy;
+      if (n.x < 0 || n.x > c.width)  n.vx *= -1;
+      if (n.y < 0 || n.y > c.height) n.vy *= -1;
+    });
+    // lines
+    for (let i = 0; i < N; i++) {
+      for (let j = i+1; j < N; j++) {
+        const dx = nodes[i].x - nodes[j].x, dy = nodes[i].y - nodes[j].y;
+        const d = Math.sqrt(dx*dx + dy*dy);
+        if (d < DIST) {
+          ctx.beginPath();
+          ctx.moveTo(nodes[i].x, nodes[i].y);
+          ctx.lineTo(nodes[j].x, nodes[j].y);
+          ctx.strokeStyle = `rgba(${color},${(1-d/DIST)*0.18})`;
+          ctx.lineWidth = 0.6;
+          ctx.stroke();
+        }
+      }
+    }
+    // dots
+    nodes.forEach(n => {
+      ctx.beginPath();
+      ctx.arc(n.x, n.y, n.r, 0, Math.PI*2);
+      ctx.fillStyle = `rgba(${color},0.35)`;
+      ctx.fill();
+    });
+    requestAnimationFrame(tick);
+  }
+  tick();
+}
+
+/* --- Blog: rising particles --- */
+function initBlogAnim() {
+  const c = makeCanvas();
+  const ctx = c.getContext('2d');
+  const particles = [];
+  const colors = [[225,106,84],[126,184,212],[201,169,110]];
+
+  function spawn() {
+    const col = colors[Math.floor(Math.random()*colors.length)];
+    particles.push({
+      x: Math.random() * c.width,
+      y: c.height + 10,
+      r: Math.random() * 2.5 + 1,
+      vy: -(Math.random() * 0.6 + 0.3),
+      vx: (Math.random() - 0.5) * 0.3,
+      alpha: 0,
+      fadeIn: true,
+      col,
+    });
+  }
+
+  for (let i = 0; i < 25; i++) {
+    spawn();
+    particles[i].y = Math.random() * c.height; // pre-scatter
+  }
+  setInterval(spawn, 1600);
+
+  function tick() {
+    c.width = c.width;
+    for (let i = particles.length - 1; i >= 0; i--) {
+      const p = particles[i];
+      p.x += p.vx; p.y += p.vy;
+      if (p.fadeIn) { p.alpha = Math.min(p.alpha + 0.015, 0.7); if (p.alpha >= 0.7) p.fadeIn = false; }
+      if (p.y < c.height * 0.1) p.alpha -= 0.008;
+      if (p.alpha <= 0 || p.y < -20) { particles.splice(i, 1); continue; }
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI*2);
+      ctx.fillStyle = `rgba(${p.col},${p.alpha})`;
+      ctx.fill();
+    }
+    requestAnimationFrame(tick);
+  }
+  tick();
+}
+
+/* --- Activities: slow gradient orbs via canvas --- */
+function initActivitiesAnim() {
+  const c = makeCanvas();
+  const ctx = c.getContext('2d');
+  const orbs = [
+    { x: c.width*0.1,  y: c.height*0.2,  r: 300, col:[225,106,84],  ox:0, oy:0, spd:0.0004 },
+    { x: c.width*0.8,  y: c.height*0.5,  r: 250, col:[100,160,220], ox:1, oy:0, spd:0.0003 },
+    { x: c.width*0.3,  y: c.height*0.75, r: 220, col:[180,130,220], ox:2, oy:1, spd:0.0005 },
+    { x: c.width*0.75, y: c.height*0.2,  r: 200, col:[80,200,160],  ox:3, oy:2, spd:0.00035 },
+  ];
+  let t = 0;
+
+  function tick() {
+    c.width = c.width;
+    t += 1;
+    orbs.forEach(o => {
+      const cx = o.x + Math.sin(t * o.spd + o.ox) * 80;
+      const cy = o.y + Math.cos(t * o.spd + o.oy) * 60;
+      const grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, o.r);
+      grad.addColorStop(0,   `rgba(${o.col},0.12)`);
+      grad.addColorStop(1,   `rgba(${o.col},0)`);
+      ctx.beginPath();
+      ctx.arc(cx, cy, o.r, 0, Math.PI*2);
+      ctx.fillStyle = grad;
+      ctx.fill();
+    });
+    requestAnimationFrame(tick);
+  }
+  tick();
+}
