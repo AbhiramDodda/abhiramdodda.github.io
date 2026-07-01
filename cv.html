@@ -25,15 +25,35 @@
 
         
 
+        .cv-toolbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-bottom: 1.25rem;
+        }
+
+        .cv-heading {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--accent);
+        }
+
+        .cv-toolbar .button-59 {
+            margin: 0;
+        }
+
         .pdf-container {
             width: 100%;
-            /* Adjust height based on viewport */
-            height: calc(100vh - 40px);
-            border: 1px solid #ddd;
+            /* Fill the viewport minus nav, toolbar, and spacing */
+            height: calc(100vh - 15rem);
+            min-height: 480px;
+            border: 1px solid var(--border-color);
             border-radius: 8px;
             overflow: hidden;
             background: white;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
         }
 
         object {
@@ -78,6 +98,7 @@
 
         
     </style>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
 </head>
 <body data-page="cv">
     <header>
@@ -103,6 +124,9 @@
       </header>
   <div class="false-div"></div>
   <div class="container">
+    <div class="cv-toolbar">
+      <h1 class="cv-heading">Curriculum Vitae</h1>
+    </div>
     <div class="pdf-container">
         <object
             data="data/cv.pdf"
@@ -111,22 +135,46 @@
             <div class="fallback">
                 <p>Unable to display PDF file.</p>
                 <p>Your device might not have a PDF plugin installed.</p>
-                <a href="data/CV-1.pdf" 
-                   class="download-btn" 
-                   target="_blank" 
+                <a href="data/cv.pdf"
+                   class="download-btn"
+                   target="_blank"
                    rel="noopener noreferrer">
                     Download PDF
                 </a>
             </div>
         </object>
     </div>
-</div>
-</div>
-<div class="false-div"></div>
+  </div>
 
   <footer class="footer">
     <div class="footer-content">
-        <p></p>
+      <div class="contact-icons">
+        <a href="/cdn-cgi/l/email-protection#0b6a696362796a666f646f6f6a4b6c666a626725686466" target="_blank" rel="noopener noreferrer" aria-label="Email">
+          <i class="fa-sharp fa-solid fa-envelope icon"></i>
+        </a>
+        <a href="https://scholar.google.com/citations?user=Y5uj28MAAAAJ&hl=en" target="_blank" rel="noopener noreferrer" aria-label="Google Scholar">
+          <i class="ai ai-google-scholar icon"></i>
+        </a>
+        <a href="https://x.com/DoddaAbhiram" target="_blank" rel="noopener noreferrer" aria-label="X">
+          <i class="bi bi-twitter-x icon"></i>
+        </a>
+        <a href="https://github.com/AbhiramDodda" target="_blank" rel="noopener noreferrer" aria-label="GitHub">
+          <i class="fab fa-github icon"></i>
+        </a>
+        <a href="https://www.linkedin.com/in/abhiramdodda" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn">
+          <i class="fab fa-linkedin icon"></i>
+        </a>
+        <a href="https://www.researchgate.net/profile/Abhiram-Dodda" target="_blank" rel="noopener noreferrer" aria-label="ResearchGate">
+          <i class="ai ai-researchgate icon"></i>
+        </a>
+        <a href="https://orcid.org/0009-0004-9666-0042" target="_blank" rel="noopener noreferrer" aria-label="ORCID">
+          <i class="ai ai-orcid icon"></i>
+        </a>
+        <a href="https://medium.com/@abhiramdodda" target="_blank" rel="noopener noreferrer" aria-label="Medium">
+          <i class="bi bi-medium icon"></i>
+        </a>
+      </div>
+      <p>© 2026 Abhiram Dodda</p>
     </div>
   </footer>
   <script src="script.js"></script>

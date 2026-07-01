@@ -25,6 +25,8 @@
   --font-color: #0a0a0a;
   --card-bg: #f8f8f8;
   --border-color: rgba(0, 0, 0, 0.1);
+  --nav-bg: rgba(255, 255, 255, 0.72);
+  --accent-soft: rgba(225, 106, 84, 0.1);
 }
 
 [data-theme="dark"] {
@@ -42,6 +44,8 @@
   --font-color: #f8f8f8;
   --card-bg: #1e1e1e;
   --border-color: rgba(255, 255, 255, 0.1);
+  --nav-bg: rgba(18, 18, 18, 0.72);
+  --accent-soft: rgba(225, 106, 84, 0.15);
 }
 
 * {
@@ -98,7 +102,9 @@ body {
 
 /* Navigation */
 .nav-bar {
-  background-color: var(--bg-color);
+  background-color: var(--nav-bg);
+  -webkit-backdrop-filter: saturate(180%) blur(12px);
+  backdrop-filter: saturate(180%) blur(12px);
   border-bottom: 1px solid var(--border-color);
   padding: 1rem 0;
   position: fixed;
@@ -183,24 +189,45 @@ body {
   transform: rotate(15deg);
 }
 
-/* Introduction Section */
-.about-h1 {
-  text-align: center;
-  font-size: 2.5rem;
-  font-weight: 700;
-  margin: 2rem 0;
+/* Hero Section */
+.hero {
+  margin: 2rem auto 1rem;
+  padding-top: 1rem;
+  padding-bottom: 0.5rem;
+}
+
+.hero-name {
+  font-size: 3rem;
+  font-weight: 800;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  margin-bottom: 0.5rem;
   color: var(--accent);
 }
 
+.hero-role {
+  font-size: 1.15rem;
+  color: var(--muted);
+  margin-bottom: 0.35rem;
+}
+
+.hero-tagline {
+  display: inline-block;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--accent);
+  background-color: var(--accent-soft);
+  padding: 0.3rem 0.9rem;
+  border-radius: 20px;
+}
+
+/* Introduction Section */
 .intro {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 2rem;
+  margin-top: 1.5rem;
 }
 
 .about {
-  flex: 3;
+  overflow: hidden; /* contain the floated image */
 }
 
 .about p {
@@ -210,20 +237,22 @@ body {
 }
 
 .profile-pic {
-  flex: 1;
-  max-width: 280px;
+  float: right;
+  width: 250px;
+  max-width: 40%;
+  margin: 0 0 1.5rem 2rem;
 }
 
 .profile-pic img {
   width: 100%;
-  border-radius: 8px;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  border-radius: 12px;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.18);
   transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 .profile-pic img:hover {
   transform: translateY(-5px);
-  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 18px 38px rgba(0, 0, 0, 0.22);
 }
 
 /* Links */
@@ -249,65 +278,79 @@ body {
   width: 100%;
 }
 
+/* Section titles with accent underline */
+.section-title {
+  position: relative;
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 1.75rem;
+  padding-bottom: 0.5rem;
+}
+
+.section-title::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 3rem;
+  height: 4px;
+  border-radius: 2px;
+  background-color: var(--accent);
+}
+
 /* News Section */
 .news {
   margin-top: 3rem;
 }
 
-.news h1 {
-  margin-bottom: 1.5rem;
-  font-size: 2rem;
-  font-weight: 700;
+.news-list {
+  list-style: none;
 }
 
-.news table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-.news td {
-  padding: 0.75rem 0;
+.news-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 1.25rem;
+  padding: 0.85rem 0;
   border-bottom: 1px solid var(--border-color);
 }
 
-.news td:first-child {
-  width: 180px;
+.news-date {
+  flex-shrink: 0;
+  min-width: 130px;
+  font-weight: 600;
+  font-size: 0.9rem;
   color: var(--accent);
 }
 
+.news-text {
+  line-height: 1.5;
+}
+
 /* Social Icons */
-.social {
-  margin-top: 2rem;
-}
-
-.social .contact-icons a i svg::before {
-  align-items: center;
-  color: var(--text-color);
-  transition-property: all .2s ease-in-out;
-}
-
 .contact-icons {
   display: flex;
-  gap: 1.5rem;
+  gap: 1rem;
   justify-content: center;
   align-items: center;
   flex-wrap: wrap;
 }
 
 .icon {
-  color: var(--text-color);
-  font-size: 4.5rem;
-  width: 70px;
-  height: 70px;
-  display: inline-block;
-  line-height: 70px;
-  text-align: center;
-  transition: color 0.3s ease, transform 0.3s ease;
-  padding: 4px;
+  color: var(--font-color);
+  font-size: 1.6rem;
+  width: 44px;
+  height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: color 0.3s ease, transform 0.3s ease, background-color 0.3s ease;
 }
 
 .icon:hover {
   color: var(--accent);
+  background-color: var(--accent-soft);
   transform: translateY(-3px);
 }
 
@@ -315,20 +358,23 @@ body {
 .footer {
   background-color: var(--bg-color);
   border-top: 1px solid var(--border-color);
-  padding: 1.5rem 0;
+  padding: 2rem 0;
   text-align: center;
-  position: fixed;
-  bottom: 0;
-  left: 0;
   width: 100%;
-  margin-top: 18rem;
-  box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1);
-  z-index: 10;
+  margin-top: 4rem;
 }
 
 .footer-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
   color: var(--muted);
   font-size: 0.875rem;
+}
+
+.footer-content p {
+  margin: 0;
 }
 
 .footer a {
@@ -359,21 +405,16 @@ body {
 
 /* Responsive Design */
 @media (max-width: 992px) {
-  .intro {
-    flex-direction: column-reverse;
-    align-items: center;
-  }
-
   .profile-pic {
-    margin-bottom: 2rem;
+    float: none;
+    display: block;
+    width: 100%;
+    max-width: 280px;
+    margin: 0 auto 1.5rem;
   }
 
   .about p {
     font-size: 1rem;
-  }
-
-  .news td:first-child {
-    width: 120px;
   }
 }
 
@@ -400,32 +441,35 @@ body {
     display: flex;
   }
 
-  .about-h1 {
-    font-size: 2rem;
+  .hero-name {
+    font-size: 2.25rem;
   }
 
   .icon {
-    font-size: 3rem;
-    width: 50px;
-    height: 50px;
-    line-height: 50px;
+    font-size: 1.4rem;
+    width: 40px;
+    height: 40px;
   }
 }
 
 @media (max-width: 480px) {
-  .about-h1 {
-    font-size: 1.8rem;
+  .hero-name {
+    font-size: 2rem;
   }
 
   .profile-pic img {
-    width: 200px;
+    width: 220px;
   }
 
   .icon {
-    font-size: 2.5rem;
-    width: 40px;
-    height: 40px;
-    line-height: 40px;
+    font-size: 1.3rem;
+    width: 38px;
+    height: 38px;
+  }
+
+  .news-item {
+    flex-direction: column;
+    gap: 0.35rem;
   }
 }
 
@@ -440,6 +484,13 @@ body {
   text-align: center;
   font-size: 2.5rem;
   margin-bottom: 1rem;
+  color: var(--accent);
+}
+
+.experience-container h2 {
+  text-align: center;
+  font-size: 2rem;
+  margin: 4rem 0 1rem;
   color: var(--accent);
 }
 
@@ -1058,15 +1109,6 @@ body::before {
     visibility: visible;
   }
   
-  .intro {
-    flex-direction: column-reverse;
-    align-items: center;
-  }
-  
-  .profile-pic {
-    margin-bottom: 2rem;
-  }
-  
   .activity-card {
     flex-direction: column;
     margin-bottom: 2rem;
@@ -1088,18 +1130,14 @@ body::before {
 }
 
 @media (max-width: 480px) {
-  .about-h1 {
+  .hero-name {
     font-size: 2rem;
   }
-  
+
   .about p {
     font-size: 1rem;
   }
-  
-  .news td:first-child {
-    width: 120px;
-  }
-  
+
   .activity-content {
     padding: 1.5rem;
   }
