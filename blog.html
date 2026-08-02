@@ -45,6 +45,58 @@
 
     <div class="blog-grid">
       <div class="blog-card fade-in-right active">
+        <div class="blog-content">
+          <div class="blog-meta">
+            <span>Distributed Systems</span>
+            <span>Aug 2, 2026</span>
+          </div>
+          <h2 class="blog-title">Exactly-Once Results in an AP System: Two-Phase Commit, Raft, and the Window You Can't Close</h2>
+          <p class="blog-excerpt">In a pull-based, available-under-partition system the same task deliberately runs more than once, so how does a result land exactly once? A two-phase staging commit copies a staged object into an identity-derived final key so duplicates collapse to one, a Raft-agreed decision fences split-brain, and the one irreducible side-effect window is made safe with an idempotency key rather than wished away.
+
+          </p>
+          <div class="blog-meta">
+            <span class="text-sm text-muted">9 min read</span>
+            <a href="https://medium.com/@abhiramdodda/exactly-once-results-in-an-ap-system-two-phase-commit-raft-and-the-window-you-cant-close-916fe73c4e59" class="read-more">Read more <span>→</span></a>
+          </div>
+        </div>
+      </div>
+
+      <div class="blog-card fade-in-right active">
+        <div class="blog-content">
+          <div class="blog-meta">
+            <span>Distributed Systems</span>
+            <span>Aug 2, 2026</span>
+          </div>
+          <h2 class="blog-title">Bounded Leases and Bounded Queues</h2>
+          <p class="blog-excerpt">Two scheduling problems that share a backbone. Bounded-grant leases let a second worker help finish a hot shard while proving nothing is ever processed twice, and a load-shedding admission controller turns each tenant into an Erlang-B loss system whose overload behavior you can predict on paper instead of queueing work until latency collapses.
+
+          </p>
+          <div class="blog-meta">
+            <span class="text-sm text-muted">8 min read</span>
+            <a href="https://medium.com/@abhiramdodda/bounded-leases-and-bounded-queues-8554a921d828" class="read-more">Read more <span>→</span></a>
+          </div>
+        </div>
+      </div>
+
+      <!-- TODO: publish and add Medium URL, then uncomment this card.
+      <div class="blog-card fade-in-right active">
+        <div class="blog-content">
+          <div class="blog-meta">
+            <span>Distributed Systems</span>
+            <span>Aug 2, 2026</span>
+          </div>
+          <h2 class="blog-title">Columnar Results, and the Ingest Bottleneck That Wasn't the Network</h2>
+          <p class="blog-excerpt">Two stories that teach the same lesson: measure the real cost, then let the measurement pick the design. Why committed results are Parquet (a change that was nearly free because the commit path never looks inside the object), and how one profiling pass found that 91 percent of ingest time was a SQLite write lock hiding behind a silently ignored driver setting.
+          </p>
+          <div class="blog-meta">
+            <span class="text-sm text-muted">8 min read</span>
+            <a href="#" class="read-more">Read more <span>→</span></a>
+          </div>
+        </div>
+      </div>
+      -->
+
+      <div class="blog-card fade-in-right active">
         <!-- <div class="blog-image">
           <img src="data/img/matrix.png" alt="Building Effective Ensemble Models for Medical Image Analysis" loading="lazy" />
         </div> -->

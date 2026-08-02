@@ -56,16 +56,20 @@
               <span class="project-date">2026</span>
             </div>
             <h2>Petabyte-Scale Image Processing Platform</h2>
-            <p>A cloud-native platform for storing petabyte-scale image datasets and running independent algorithms against the same data concurrently. Features hash-prefix sharding, a consistent-hash ring, a Kubernetes operator, gVisor-sandboxed execution, WAL-based crash recovery, phi-accrual failure detection, and Arrow/Parquet data pipelines.</p>
+            <p>A cloud-native platform for storing petabyte-scale image datasets and running independent algorithms against the same data concurrently. Highlights: exactly-once result commit via two-phase staging plus a Raft-agreed decision, intra-shard work-stealing with bounded-grant leases, load-shedding backpressure with per-tenant fairness, and identity-derived causal event tracing across the coordinator/worker boundary. Built on hash-prefix sharding over a consistent-hash ring, a Kubernetes operator, gVisor-sandboxed execution, WAL + checkpoint crash recovery, phi-accrual failure detection, and columnar Parquet result output.</p>
             <div class="project-tech-stack">
               <span>Go</span>
               <span>Kubernetes</span>
+              <span>Raft</span>
               <span>Apache Arrow</span>
               <span>Distributed Systems</span>
             </div>
             <div class="project-links">
               <a href="https://github.com/AbhiramDodda/distributed-image-processing-system" target="_blank" class="project-link">
                 <i class="fab fa-github"></i> Code
+              </a>
+              <a href="https://medium.com/@abhiramdodda/exactly-once-results-in-an-ap-system-two-phase-commit-raft-and-the-window-you-cant-close-916fe73c4e59" target="_blank" class="project-link">
+                <i class="fas fa-external-link-alt"></i> Blog
               </a>
             </div>
           </div>
