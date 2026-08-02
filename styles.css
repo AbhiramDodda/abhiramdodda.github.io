@@ -13,20 +13,29 @@
 :root {
   --foreground-rgb: 0, 0, 0;
   --background-start-rgb: 214, 219, 220;
-  --text-color: #000000;
+  --text-color: #1a1a1a;
   --background-end-rgb: 255, 255, 255;
   --primary: #0a0a0a;
   --primary-foreground: #f8f8f8;
   --secondary: #f1f1f1;
   --secondary-foreground: #0a0a0a;
   --accent: #E16A54;
-  --muted: #6b7280;
-  --bg-color: #ffffff;
-  --font-color: #0a0a0a;
-  --card-bg: #f8f8f8;
-  --border-color: rgba(0, 0, 0, 0.1);
-  --nav-bg: rgba(255, 255, 255, 0.72);
-  --accent-soft: rgba(225, 106, 84, 0.1);
+  --accent-2: #F39E60;
+  --muted: #5b6472;
+  --bg-color: #faf8f5;        /* warm paper */
+  --font-color: #23201d;
+  --card-bg: #ffffff;         /* cards pop white against warm page */
+  --border-color: rgba(35, 32, 29, 0.10);
+  --nav-bg: rgba(250, 248, 245, 0.72);
+  --accent-soft: rgba(225, 106, 84, 0.10);
+  /* Layered shadows tuned for a light surface */
+  --shadow-sm: 0 4px 12px rgba(35, 32, 29, 0.06);
+  --shadow-md: 0 12px 30px rgba(35, 32, 29, 0.10);
+  --shadow-lg: 0 22px 45px rgba(35, 32, 29, 0.14);
+  --accent-glow: 0 18px 40px rgba(225, 106, 84, 0.22);
+  /* Theme-aware animated backdrop */
+  --bg-gradient: linear-gradient(-45deg, #fbeede, #f7e2ec, #e7eef7, #fdf3e8);
+  --bg-gradient-opacity: 0.6;
 }
 
 [data-theme="dark"] {
@@ -39,13 +48,22 @@
   --secondary: #1f1f1f;
   --secondary-foreground: #f8f8f8;
   --accent: #E16A54;
+  --accent-2: #F39E60;
   --muted: #9ca3af;
-  --bg-color: #121212;
-  --font-color: #f8f8f8;
-  --card-bg: #1e1e1e;
-  --border-color: rgba(255, 255, 255, 0.1);
-  --nav-bg: rgba(18, 18, 18, 0.72);
+  --bg-color: #101013;
+  --font-color: #f4f3f1;
+  --card-bg: #1a1a1e;
+  --border-color: rgba(255, 255, 255, 0.09);
+  --nav-bg: rgba(16, 16, 19, 0.72);
   --accent-soft: rgba(225, 106, 84, 0.15);
+  /* Softer, deeper shadows for dark surfaces */
+  --shadow-sm: 0 4px 14px rgba(0, 0, 0, 0.35);
+  --shadow-md: 0 14px 34px rgba(0, 0, 0, 0.45);
+  --shadow-lg: 0 24px 50px rgba(0, 0, 0, 0.55);
+  --accent-glow: 0 18px 44px rgba(225, 106, 84, 0.28);
+  /* Theme-aware animated backdrop */
+  --bg-gradient: linear-gradient(-45deg, #1d1d1d, #292929, #1e1e1e, #0a0a0a);
+  --bg-gradient-opacity: 0.15;
 }
 
 * {
@@ -182,11 +200,20 @@ body {
   border: none;
   cursor: pointer;
   color: var(--text-color);
-  font-size: 1.5rem;
+  font-size: 1.35rem;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.25s ease, color 0.25s ease, transform 0.35s ease;
 }
 
 #theme-toggle:hover {
-  transform: rotate(15deg);
+  transform: rotate(25deg);
+  color: var(--accent);
+  background-color: var(--accent-soft);
 }
 
 /* Hero Section */
@@ -246,13 +273,13 @@ body {
 .profile-pic img {
   width: 100%;
   border-radius: 12px;
-  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.18);
+  box-shadow: var(--shadow-md);
   transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 .profile-pic img:hover {
   transform: translateY(-5px);
-  box-shadow: 0 18px 38px rgba(0, 0, 0, 0.22);
+  box-shadow: var(--accent-glow);
 }
 
 /* Links */
@@ -561,15 +588,17 @@ body {
 
 .experience-content {
   background-color: var(--card-bg);
+  border: 1px solid var(--border-color);
   border-radius: 12px;
   padding: 1.5rem;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
 }
 
 .experience-content:hover {
   transform: translateY(-5px);
-  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-lg);
+  border-color: var(--accent);
 }
 
 .experience-date {
@@ -797,11 +826,12 @@ body::before {
   top: 0; left: 0;
   width: 100vw;
   height: 100vh;
-  background: linear-gradient(-45deg, #1d1d1d, #292929, #1e1e1e, #0a0a0a);
+  background: var(--bg-gradient);
   background-size: 400% 400%;
   animation: gradientBackground 15s ease infinite;
   z-index: -1;
-  opacity: 0.15; /* Adjust for subtlety */
+  opacity: var(--bg-gradient-opacity);
+  transition: opacity 0.4s ease;
   pointer-events: none;
 }
 
@@ -985,15 +1015,17 @@ body::before {
   display: flex;
   margin-bottom: 4rem;
   background-color: var(--card-bg);
+  border: 1px solid var(--border-color);
   border-radius: 12px;
   overflow: hidden;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
 }
 
 .activity-card:hover {
   transform: translateY(-5px);
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-lg);
+  border-color: var(--accent);
 }
 
 .activity-image {
@@ -1174,8 +1206,9 @@ body::before {
   border-radius: 12px;
   overflow: hidden;
   background-color: var(--card-bg);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
   height: 100%;
   display: flex;
   flex-direction: column;
@@ -1183,7 +1216,8 @@ body::before {
 
 .blog-card:hover {
   transform: translateY(-5px);
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-lg);
+  border-color: var(--accent);
 }
 
 .blog-image {
@@ -1370,10 +1404,11 @@ margin-top: 2rem;
 
 .project-card {
 background-color: var(--card-bg);
+border: 1px solid var(--border-color);
 border-radius: 12px;
 overflow: hidden;
-box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
-transition: transform 0.3s ease, box-shadow 0.3s ease;
+box-shadow: var(--shadow-sm);
+transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
 height: 100%;
 display: flex;
 flex-direction: column;
@@ -1381,7 +1416,8 @@ flex-direction: column;
 
 .project-card:hover {
 transform: translateY(-5px);
-box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+box-shadow: var(--shadow-lg);
+border-color: var(--accent);
 }
 
 .project-image {
