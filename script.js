@@ -1,6 +1,6 @@
 // Configuration - Update this once for all pages
 const SITE_CONFIG = {
-  lastUpdated: 'September 19, 2026',
+  lastUpdated: 'September 20, 2026',
   copyrightYear: '2026'
 };
 

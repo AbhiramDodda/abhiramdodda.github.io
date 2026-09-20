@@ -1612,3 +1612,17 @@ font-size: 1rem;
   z-index: -1;          /* always behind everything */
   pointer-events: none;
 }
+/* CV download on Experience page */
+.cv-download {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: -2rem;
+  margin-bottom: 1rem;
+}
+
+.cv-download .button-59 {
+  margin-right: 0;
+  margin-bottom: 0;
+}
