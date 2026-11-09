@@ -274,11 +274,10 @@ body {
   width: 100%;
   border-radius: 12px;
   box-shadow: var(--shadow-md);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  transition: box-shadow 0.3s ease;
 }
 
 .profile-pic img:hover {
-  transform: translateY(-5px);
   box-shadow: var(--accent-glow);
 }
 
