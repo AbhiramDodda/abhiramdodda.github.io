@@ -67,12 +67,15 @@ li button { padding: 8px 12px; font-size: 14px; background: var(--bg); color: va
 
   <section aria-labelledby="mode-h">
     <label class="h" id="mode-h">Mode</label>
-    <div class="seg" role="radiogroup" aria-labelledby="mode-h">
-      <input type="radio" name="mode" id="mode-pr" value="playrec" checked>
-      <label for="mode-pr"><b>Play + record</b>One phone (wall ranging)</label>
-      <input type="radio" name="mode" id="mode-r" value="rec">
-      <label for="mode-r"><b>Record only</b>Another device plays</label>
+    <div class="seg three" role="radiogroup" aria-labelledby="mode-h">
+      <input type="radio" name="mode" id="mode-p" value="play">
+      <label for="mode-p"><b>Play only</b>Speaker phone</label>
+      <input type="radio" name="mode" id="mode-r" value="rec" checked>
+      <label for="mode-r"><b>Record only</b>Mic phone, 10 s</label>
+      <input type="radio" name="mode" id="mode-pr" value="playrec">
+      <label for="mode-pr"><b>Play + record</b>One phone</label>
     </div>
+    <span class="tag">Two phones side by side: start Record only on one, then Play only on the other within 3 seconds. Play + record on one phone sends sound to the earpiece on iOS.</span>
     <label class="h" id="sig-h">Signal</label>
     <div class="seg" role="radiogroup" aria-labelledby="sig-h">
       <input type="radio" name="sig" id="sig-w" value="wideband" checked>
@@ -80,7 +83,7 @@ li button { padding: 8px 12px; font-size: 14px; background: var(--bg); color: va
       <input type="radio" name="sig" id="sig-n" value="near_inaudible">
       <label for="sig-n"><b>Near-inaudible</b>16 to 20 kHz</label>
     </div>
-    <label class="h" id="pm-h">Playback method</label>
+    <label class="h" id="pm-h">Playback method (Play + record only)</label>
     <div class="seg three" role="radiogroup" aria-labelledby="pm-h">
       <input type="radio" name="pm" id="pm-el" value="element" checked>
       <label for="pm-el"><b>A. Audio file</b>Try first</label>
@@ -97,7 +100,6 @@ li button { padding: 8px 12px; font-size: 14px; background: var(--bg); color: va
 
   <section aria-live="polite">
     <button id="go" type="button">Start</button>
-    <button id="test" type="button" class="secondary">Test speaker (no recording)</button>
     <div class="meter" aria-hidden="true"><div id="lvl"></div></div>
     <div id="status">Ready. Tap Start and allow the microphone.</div>
   </section>
@@ -110,7 +112,7 @@ li button { padding: 8px 12px; font-size: 14px; background: var(--bg); color: va
   <section>
     <label class="h">Before you record</label>
     <ul class="tips">
-      <li>Turn off silent mode and keep the phone still during the 5 seconds. Tap Test speaker first to hear how loud the chirps should be.</li>
+      <li>Turn off silent mode and keep the phone still during the 5 seconds.</li>
       <li>Record <b>open_air</b> once per session: phone held still in the middle of a room, at least 1 m from every wall, the floor and the ceiling. It is the leakage template.</li>
       <li>If the status line says clipped, lower the volume and record again.</li>
     </ul>
@@ -172,6 +174,16 @@ async function run() {
   const sigName = document.querySelector("input[name=sig]:checked").value;
   const cfg = PRESETS[sigName];
   const pm = document.querySelector("input[name=pm]:checked").value;
+  if (mode === "play") {   // mic stays off, so iOS keeps the bottom loudspeaker
+    try { if (navigator.audioSession) navigator.audioSession.type = "playback"; } catch (e) {}
+    const t = new Audio(URL.createObjectURL(wavBlob(makeTrain(cfg), cfg.fs)));
+    t.playsInline = true;
+    const done = (msg, cls) => { status(msg, cls); busy = false; $("go").disabled = false; $("go").textContent = "Play again"; URL.revokeObjectURL(t.src); };
+    t.onended = () => done("Played 40 chirps. Save the recording on the other phone.", "good");
+    status("Playing chirps...");
+    t.play().catch(err => done("Could not play: " + err.message, "bad"));
+    return;
+  }
   let ctx, stream, el;
   try {
     if (!navigator.mediaDevices?.getUserMedia) throw new Error("This browser blocks the microphone here. Open the page over https in Safari.");
@@ -223,8 +235,8 @@ async function run() {
       player.start();
       durS = train.length / fs + 0.6;
     } else {
-      status("Recording for 7 s. Start playback on the other device now.");
-      durS = 7;
+      status("Recording for 10 s. Tap Play only on the other phone now.");
+      durS = 10;
     }
     await new Promise(r => setTimeout(r, durS * 1000));
 
@@ -291,15 +303,7 @@ async function save(r) {
 }
 
 $("go").addEventListener("click", run);
-$("test").addEventListener("click", () => {   // speaker check with the mic off: this is the loudness to expect
-  const cfg = PRESETS[document.querySelector("input[name=sig]:checked").value];
-  try { if (navigator.audioSession) navigator.audioSession.type = "playback"; } catch (e) {}
-  const t = new Audio(URL.createObjectURL(wavBlob(makeTrain(cfg), cfg.fs)));
-  t.playsInline = true;
-  $("test").disabled = true;
-  t.onended = () => { $("test").disabled = false; URL.revokeObjectURL(t.src); };
-  t.play().catch(err => { $("test").disabled = false; status("Could not play: " + err.message, "bad"); });
-});
+
 </script>
 </body>
 </html>
