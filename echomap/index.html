@@ -29,6 +29,7 @@ section { background: var(--surface); border: 1px solid var(--line); border-radi
           display: flex; flex-direction: column; gap: 12px; }
 label.h { font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); font-weight: 600; }
 .seg { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.seg.three { grid-template-columns: 1fr 1fr 1fr; }
 .seg input { position: absolute; opacity: 0; pointer-events: none; }
 .seg label { border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; cursor: pointer; font-size: 14px; }
 .seg label b { display: block; font-size: 15px; }
@@ -39,7 +40,8 @@ input[type=text] { width: 100%; font: 16px var(--mono); padding: 10px 12px; bord
 button { font: 600 17px var(--sans); border-radius: 12px; border: 0; padding: 16px; cursor: pointer; }
 button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 #go { background: var(--accent); color: var(--accent-fg); font-size: 19px; }
-#go:disabled { opacity: 0.5; cursor: default; }
+#go:disabled, #test:disabled { opacity: 0.5; cursor: default; }
+.secondary { background: var(--bg); color: var(--fg); border: 1px solid var(--line); font-size: 15px; padding: 12px; }
 .meter { height: 10px; border-radius: 5px; background: var(--line); overflow: hidden; }
 .meter > div { height: 100%; width: 0%; background: var(--accent); transition: width 60ms linear; }
 #status { font: 14px var(--mono); color: var(--muted); min-height: 1.4em; overflow-wrap: anywhere; }
@@ -78,6 +80,16 @@ li button { padding: 8px 12px; font-size: 14px; background: var(--bg); color: va
       <input type="radio" name="sig" id="sig-n" value="near_inaudible">
       <label for="sig-n"><b>Near-inaudible</b>16 to 20 kHz</label>
     </div>
+    <label class="h" id="pm-h">Playback method</label>
+    <div class="seg three" role="radiogroup" aria-labelledby="pm-h">
+      <input type="radio" name="pm" id="pm-el" value="element" checked>
+      <label for="pm-el"><b>A. Audio file</b>Try first</label>
+      <input type="radio" name="pm" id="pm-wa" value="webaudio">
+      <label for="pm-wa"><b>B. Web Audio</b>Default session</label>
+      <input type="radio" name="pm" id="pm-call" value="callmode">
+      <label for="pm-call"><b>C. Web Audio</b>Call mode</label>
+    </div>
+    <span class="tag">iOS can move sound to the earpiece while the mic is on. If a recording is too quiet, try another method and keep the one where the chirps come loudly from the bottom speaker.</span>
     <label class="h" for="label">Recording name</label>
     <input type="text" id="label" value="wall_1.00m" autocomplete="off" autocapitalize="off" spellcheck="false">
     <span class="tag">Put the true distance in the name, for example wall_0.75m or open_air.</span>
@@ -85,6 +97,7 @@ li button { padding: 8px 12px; font-size: 14px; background: var(--bg); color: va
 
   <section aria-live="polite">
     <button id="go" type="button">Start</button>
+    <button id="test" type="button" class="secondary">Test speaker (no recording)</button>
     <div class="meter" aria-hidden="true"><div id="lvl"></div></div>
     <div id="status">Ready. Tap Start and allow the microphone.</div>
   </section>
@@ -97,7 +110,7 @@ li button { padding: 8px 12px; font-size: 14px; background: var(--bg); color: va
   <section>
     <label class="h">Before you record</label>
     <ul class="tips">
-      <li>Turn off silent mode, set the volume to about 60%, and keep the phone still during the 5 seconds.</li>
+      <li>Turn off silent mode and keep the phone still during the 5 seconds. Tap Test speaker first to hear how loud the chirps should be.</li>
       <li>Record <b>open_air</b> once per session: phone held still in the middle of a room, at least 1 m from every wall, the floor and the ceiling. It is the leakage template.</li>
       <li>If the status line says clipped, lower the volume and record again.</li>
     </ul>
@@ -158,15 +171,22 @@ async function run() {
   const mode = document.querySelector("input[name=mode]:checked").value;
   const sigName = document.querySelector("input[name=sig]:checked").value;
   const cfg = PRESETS[sigName];
-  let ctx, stream;
+  const pm = document.querySelector("input[name=pm]:checked").value;
+  let ctx, stream, el;
   try {
     if (!navigator.mediaDevices?.getUserMedia) throw new Error("This browser blocks the microphone here. Open the page over https in Safari.");
-    // Ask iOS for a play-and-record session where supported (Safari 16.4+).
-    try { if (navigator.audioSession) navigator.audioSession.type = "play-and-record"; } catch (e) {}
+    // Everything that needs the tap happens before the first await, or iOS may refuse to play.
+    try { if (navigator.audioSession) navigator.audioSession.type = pm === "callmode" ? "play-and-record" : "auto"; } catch (e) {}
+    ctx = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: cfg.fs });
+    const resumed = ctx.resume();
+    if (mode === "playrec" && pm === "element") {
+      el = new Audio(URL.createObjectURL(wavBlob(makeTrain(cfg), cfg.fs)));
+      el.muted = true; el.playsInline = true;
+      el.play().then(() => el.pause()).catch(() => {});   // unlocks this element for later playback
+    }
     stream = await navigator.mediaDevices.getUserMedia({ audio: {
       echoCancellation: false, noiseSuppression: false, autoGainControl: false, channelCount: 1 } });
-    ctx = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: cfg.fs });
-    await ctx.resume();
+    await resumed;
     const fs = ctx.sampleRate;
     const track = stream.getAudioTracks()[0];
     const st = track.getSettings ? track.getSettings() : {};
@@ -186,7 +206,13 @@ async function run() {
     src.connect(proc); proc.connect(mute); mute.connect(ctx.destination);
 
     let durS;
-    if (mode === "playrec") {
+    if (mode === "playrec" && pm === "element") {
+      status("Recording. Playing chirps, keep still...");
+      await new Promise(r => setTimeout(r, 300));
+      el.pause(); el.currentTime = 0; el.muted = false;
+      await el.play();
+      durS = makeTrain(cfg).length / cfg.fs + 0.6;
+    } else if (mode === "playrec") {
       const train = makeTrain({ ...cfg, fs });
       const ab = ctx.createBuffer(1, train.length, fs);
       ab.copyToChannel(train, 0);
@@ -202,6 +228,7 @@ async function run() {
     }
     await new Promise(r => setTimeout(r, durS * 1000));
 
+    if (el) { el.pause(); URL.revokeObjectURL(el.src); }
     proc.disconnect(); src.disconnect();
     stream.getTracks().forEach(t => t.stop());
     await ctx.close();
@@ -213,18 +240,20 @@ async function run() {
 
     const label = ($("label").value.trim() || "rec").replace(/[^A-Za-z0-9._-]+/g, "_");
     const stamp = new Date().toISOString().slice(11, 19).replace(/:/g, "");
-    const name = `${label}_${sigName}_${mode}_${stamp}.wav`;
+    const tag = mode === "playrec" ? { element: "A", webaudio: "B", callmode: "C" }[pm] : "rec";
+    const name = `${label}_${sigName}_${tag}_${stamp}.wav`;
     recordings.unshift({ name, blob: wavBlob(all, fs), peak, fs, secs: total / fs, ec: st.echoCancellation, ns: st.noiseSuppression, agc: st.autoGainControl });
     renderList();
 
     const procOn = [st.echoCancellation && "echo cancellation", st.noiseSuppression && "noise suppression", st.autoGainControl && "auto gain"].filter(Boolean);
     if (peak >= 0.99) status(`Clipped (peak ${peak.toFixed(2)}). Lower the volume and record again.`, "bad");
-    else if (peak < 0.05) status(`Very quiet (peak ${peak.toFixed(3)}). Raise the volume or check silent mode.`, "warn");
+    else if (peak < 0.02) status(`Too quiet (peak ${(20 * Math.log10(peak + 1e-9)).toFixed(0)} dB). Sound is probably going to the earpiece. Try another playback method.`, "warn");
     else if (procOn.length) status(`Saved, but the browser reports ${procOn.join(", ")} is on. Results may be distorted.`, "warn");
-    else status(`Saved ${name} (${fs} Hz, peak ${peak.toFixed(2)}).`, "good");
+    else status(`Saved ${name} (${fs} Hz, peak ${(20 * Math.log10(peak)).toFixed(0)} dB).`, "good");
   } catch (err) {
     try { stream && stream.getTracks().forEach(t => t.stop()); } catch (e) {}
     try { ctx && ctx.state !== "closed" && ctx.close(); } catch (e) {}
+    try { el && el.pause(); } catch (e) {}
     const msg = err && err.name === "NotAllowedError" ? "Microphone permission was denied. Allow it in Safari settings for this site." : (err && err.message) || String(err);
     status(msg, "bad");
   } finally {
@@ -262,6 +291,15 @@ async function save(r) {
 }
 
 $("go").addEventListener("click", run);
+$("test").addEventListener("click", () => {   // speaker check with the mic off: this is the loudness to expect
+  const cfg = PRESETS[document.querySelector("input[name=sig]:checked").value];
+  try { if (navigator.audioSession) navigator.audioSession.type = "playback"; } catch (e) {}
+  const t = new Audio(URL.createObjectURL(wavBlob(makeTrain(cfg), cfg.fs)));
+  t.playsInline = true;
+  $("test").disabled = true;
+  t.onended = () => { $("test").disabled = false; URL.revokeObjectURL(t.src); };
+  t.play().catch(err => { $("test").disabled = false; status("Could not play: " + err.message, "bad"); });
+});
 </script>
 </body>
 </html>
