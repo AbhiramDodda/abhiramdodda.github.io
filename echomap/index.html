@@ -1,0 +1,267 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>EchoMap Recorder</title>
+<style>
+/* Layout: one narrow column, phone first. Big controls you can hit while holding the phone at arm's length. */
+:root {
+  --bg: #f5f7f6; --surface: #ffffff; --fg: #17201d; --muted: #5b6862; --line: #d8dfdb;
+  --accent: #0f6b5c; --accent-fg: #ffffff; --warn: #a14a00; --bad: #b3261e; --good: #1d7a3a;
+  --mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+  --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root { --bg: #0f1513; --surface: #18201d; --fg: #e6ece9; --muted: #9aa8a1; --line: #2c3833;
+          --accent: #4fc2a9; --accent-fg: #06201a; --warn: #f0a050; --bad: #ff8a80; --good: #7ad192;
+          color-scheme: dark; }
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--fg); font: 16px/1.45 var(--sans);
+       padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+       padding-block: max(16px, env(safe-area-inset-top, 0px)) 40px; }
+main { max-width: 520px; margin: 0 auto; display: flex; flex-direction: column; gap: 16px; }
+h1 { font-size: 22px; margin: 4px 0 0; letter-spacing: -0.01em; }
+.sub { color: var(--muted); font-size: 14px; margin: 0; }
+section { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 16px;
+          display: flex; flex-direction: column; gap: 12px; }
+label.h { font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); font-weight: 600; }
+.seg { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.seg input { position: absolute; opacity: 0; pointer-events: none; }
+.seg label { border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; cursor: pointer; font-size: 14px; }
+.seg label b { display: block; font-size: 15px; }
+.seg input:checked + label { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
+.seg input:focus-visible + label { outline: 2px solid var(--accent); outline-offset: 2px; }
+input[type=text] { width: 100%; font: 16px var(--mono); padding: 10px 12px; border-radius: 10px;
+                   border: 1px solid var(--line); background: var(--bg); color: var(--fg); }
+button { font: 600 17px var(--sans); border-radius: 12px; border: 0; padding: 16px; cursor: pointer; }
+button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+#go { background: var(--accent); color: var(--accent-fg); font-size: 19px; }
+#go:disabled { opacity: 0.5; cursor: default; }
+.meter { height: 10px; border-radius: 5px; background: var(--line); overflow: hidden; }
+.meter > div { height: 100%; width: 0%; background: var(--accent); transition: width 60ms linear; }
+#status { font: 14px var(--mono); color: var(--muted); min-height: 1.4em; overflow-wrap: anywhere; }
+#status.bad { color: var(--bad); } #status.warn { color: var(--warn); } #status.good { color: var(--good); }
+ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+li { display: flex; gap: 10px; align-items: center; border-top: 1px solid var(--line); padding-top: 8px; }
+li:first-child { border-top: 0; padding-top: 0; }
+li .name { flex: 1; min-width: 0; font: 13px var(--mono); overflow-wrap: anywhere; }
+li .name small { display: block; color: var(--muted); font-family: var(--sans); }
+li button { padding: 8px 12px; font-size: 14px; background: var(--bg); color: var(--fg); border: 1px solid var(--line); }
+.tips { font-size: 14px; color: var(--muted); margin: 0; padding-left: 18px; }
+.tips li { display: list-item; border: 0; padding: 0; }
+.tag { font: 12px var(--mono); color: var(--muted); }
+@media (prefers-reduced-motion: reduce) { .meter > div { transition: none; } }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <h1>EchoMap Recorder</h1>
+    <p class="sub">Plays the chirp train and records raw microphone audio as a 48 kHz WAV.</p>
+  </header>
+
+  <section aria-labelledby="mode-h">
+    <label class="h" id="mode-h">Mode</label>
+    <div class="seg" role="radiogroup" aria-labelledby="mode-h">
+      <input type="radio" name="mode" id="mode-pr" value="playrec" checked>
+      <label for="mode-pr"><b>Play + record</b>One phone (wall ranging)</label>
+      <input type="radio" name="mode" id="mode-r" value="rec">
+      <label for="mode-r"><b>Record only</b>Another device plays</label>
+    </div>
+    <label class="h" id="sig-h">Signal</label>
+    <div class="seg" role="radiogroup" aria-labelledby="sig-h">
+      <input type="radio" name="sig" id="sig-w" value="wideband" checked>
+      <label for="sig-w"><b>Wideband</b>2 to 20 kHz, audible</label>
+      <input type="radio" name="sig" id="sig-n" value="near_inaudible">
+      <label for="sig-n"><b>Near-inaudible</b>16 to 20 kHz</label>
+    </div>
+    <label class="h" for="label">Recording name</label>
+    <input type="text" id="label" value="wall_1.00m" autocomplete="off" autocapitalize="off" spellcheck="false">
+    <span class="tag">Put the true distance in the name, for example wall_0.75m or open_air.</span>
+  </section>
+
+  <section aria-live="polite">
+    <button id="go" type="button">Start</button>
+    <div class="meter" aria-hidden="true"><div id="lvl"></div></div>
+    <div id="status">Ready. Tap Start and allow the microphone.</div>
+  </section>
+
+  <section>
+    <label class="h">Recordings this session</label>
+    <ul id="list"><li><span class="name"><small>None yet.</small></span></li></ul>
+  </section>
+
+  <section>
+    <label class="h">Before you record</label>
+    <ul class="tips">
+      <li>Turn off silent mode, set the volume to about 60%, and keep the phone still during the 5 seconds.</li>
+      <li>Record <b>open_air</b> once per session: phone held still in the middle of a room, at least 1 m from every wall, the floor and the ceiling. It is the leakage template.</li>
+      <li>If the status line says clipped, lower the volume and record again.</li>
+    </ul>
+  </section>
+</main>
+
+<script>
+"use strict";
+// Must match echomap/signals.py exactly.
+const PRESETS = {
+  wideband:       { fs: 48000, f0: 2000,  f1: 20000, chirp_s: 0.010, period_s: 0.100, repeats: 40, lead_s: 0.5, taper: 0.5, amplitude: 0.8 },
+  near_inaudible: { fs: 48000, f0: 16000, f1: 20000, chirp_s: 0.020, period_s: 0.100, repeats: 40, lead_s: 0.5, taper: 0.5, amplitude: 0.8 },
+};
+
+function tukey(n, a) {                       // same definition as scipy.signal.windows.tukey
+  const w = new Float64Array(n).fill(1);
+  if (a <= 0) return w;
+  const width = Math.floor(a * (n - 1) / 2);
+  for (let i = 0; i <= width; i++) {
+    w[i] = 0.5 * (1 + Math.cos(Math.PI * (-1 + 2 * i / (a * (n - 1)))));
+    const j = n - 1 - i;
+    w[j] = 0.5 * (1 + Math.cos(Math.PI * (-2 / a + 1 + 2 * j / (a * (n - 1)))));
+  }
+  return w;
+}
+
+function makeTrain(c) {                      // same as make_train() in signals.py
+  const n = Math.round(c.chirp_s * c.fs), P = Math.round(c.period_s * c.fs), lead = Math.round(c.lead_s * c.fs);
+  const w = tukey(n, c.taper), k = (c.f1 - c.f0) / c.chirp_s;
+  const chirp = new Float64Array(n);
+  for (let i = 0; i < n; i++) { const t = i / c.fs; chirp[i] = Math.cos(2 * Math.PI * (c.f0 * t + 0.5 * k * t * t)) * w[i]; }
+  const out = new Float32Array(lead + P * c.repeats + P);
+  let peak = 0;
+  for (let r = 0; r < c.repeats; r++) for (let i = 0; i < n; i++) { out[lead + r * P + i] = chirp[i]; peak = Math.max(peak, Math.abs(chirp[i])); }
+  for (let i = 0; i < out.length; i++) out[i] *= c.amplitude / peak;
+  return out;
+}
+
+function wavBlob(samples, fs) {              // 16-bit PCM mono
+  const buf = new ArrayBuffer(44 + samples.length * 2), v = new DataView(buf);
+  const s = (o, str) => { for (let i = 0; i < str.length; i++) v.setUint8(o + i, str.charCodeAt(i)); };
+  s(0, "RIFF"); v.setUint32(4, 36 + samples.length * 2, true); s(8, "WAVE"); s(12, "fmt ");
+  v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 1, true); v.setUint32(24, fs, true);
+  v.setUint32(28, fs * 2, true); v.setUint16(32, 2, true); v.setUint16(34, 16, true); s(36, "data");
+  v.setUint32(40, samples.length * 2, true);
+  for (let i = 0; i < samples.length; i++) v.setInt16(44 + i * 2, Math.max(-1, Math.min(1, samples[i])) * 32767, true);
+  return new Blob([buf], { type: "audio/wav" });
+}
+
+const $ = id => document.getElementById(id);
+const status = (msg, cls = "") => { const el = $("status"); el.textContent = msg; el.className = cls; };
+const recordings = [];
+let busy = false;
+
+async function run() {
+  if (busy) return;
+  busy = true; $("go").disabled = true;
+  const mode = document.querySelector("input[name=mode]:checked").value;
+  const sigName = document.querySelector("input[name=sig]:checked").value;
+  const cfg = PRESETS[sigName];
+  let ctx, stream;
+  try {
+    if (!navigator.mediaDevices?.getUserMedia) throw new Error("This browser blocks the microphone here. Open the page over https in Safari.");
+    // Ask iOS for a play-and-record session where supported (Safari 16.4+).
+    try { if (navigator.audioSession) navigator.audioSession.type = "play-and-record"; } catch (e) {}
+    stream = await navigator.mediaDevices.getUserMedia({ audio: {
+      echoCancellation: false, noiseSuppression: false, autoGainControl: false, channelCount: 1 } });
+    ctx = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: cfg.fs });
+    await ctx.resume();
+    const fs = ctx.sampleRate;
+    const track = stream.getAudioTracks()[0];
+    const st = track.getSettings ? track.getSettings() : {};
+
+    const src = ctx.createMediaStreamSource(stream);
+    const proc = ctx.createScriptProcessor(4096, 1, 1);
+    const chunks = [];
+    let level = 0;
+    proc.onaudioprocess = e => {
+      const d = e.inputBuffer.getChannelData(0);
+      chunks.push(new Float32Array(d));
+      let m = 0; for (let i = 0; i < d.length; i += 8) m = Math.max(m, Math.abs(d[i]));
+      level = Math.max(m, level * 0.85);
+      $("lvl").style.width = Math.min(100, level * 100) + "%";
+    };
+    const mute = ctx.createGain(); mute.gain.value = 0;      // keeps the processor running without echoing the mic
+    src.connect(proc); proc.connect(mute); mute.connect(ctx.destination);
+
+    let durS;
+    if (mode === "playrec") {
+      const train = makeTrain({ ...cfg, fs });
+      const ab = ctx.createBuffer(1, train.length, fs);
+      ab.copyToChannel(train, 0);
+      const player = ctx.createBufferSource();
+      player.buffer = ab; player.connect(ctx.destination);
+      status("Recording. Playing chirps, keep still...");
+      await new Promise(r => setTimeout(r, 300));
+      player.start();
+      durS = train.length / fs + 0.6;
+    } else {
+      status("Recording for 7 s. Start playback on the other device now.");
+      durS = 7;
+    }
+    await new Promise(r => setTimeout(r, durS * 1000));
+
+    proc.disconnect(); src.disconnect();
+    stream.getTracks().forEach(t => t.stop());
+    await ctx.close();
+
+    const total = chunks.reduce((n, c) => n + c.length, 0);
+    const all = new Float32Array(total);
+    let o = 0; for (const c of chunks) { all.set(c, o); o += c.length; }
+    let peak = 0; for (let i = 0; i < all.length; i++) peak = Math.max(peak, Math.abs(all[i]));
+
+    const label = ($("label").value.trim() || "rec").replace(/[^A-Za-z0-9._-]+/g, "_");
+    const stamp = new Date().toISOString().slice(11, 19).replace(/:/g, "");
+    const name = `${label}_${sigName}_${mode}_${stamp}.wav`;
+    recordings.unshift({ name, blob: wavBlob(all, fs), peak, fs, secs: total / fs, ec: st.echoCancellation, ns: st.noiseSuppression, agc: st.autoGainControl });
+    renderList();
+
+    const procOn = [st.echoCancellation && "echo cancellation", st.noiseSuppression && "noise suppression", st.autoGainControl && "auto gain"].filter(Boolean);
+    if (peak >= 0.99) status(`Clipped (peak ${peak.toFixed(2)}). Lower the volume and record again.`, "bad");
+    else if (peak < 0.05) status(`Very quiet (peak ${peak.toFixed(3)}). Raise the volume or check silent mode.`, "warn");
+    else if (procOn.length) status(`Saved, but the browser reports ${procOn.join(", ")} is on. Results may be distorted.`, "warn");
+    else status(`Saved ${name} (${fs} Hz, peak ${peak.toFixed(2)}).`, "good");
+  } catch (err) {
+    try { stream && stream.getTracks().forEach(t => t.stop()); } catch (e) {}
+    try { ctx && ctx.state !== "closed" && ctx.close(); } catch (e) {}
+    const msg = err && err.name === "NotAllowedError" ? "Microphone permission was denied. Allow it in Safari settings for this site." : (err && err.message) || String(err);
+    status(msg, "bad");
+  } finally {
+    busy = false; $("go").disabled = false;
+    $("lvl").style.width = "0%";
+    $("go").textContent = "Record again";
+  }
+}
+
+function renderList() {
+  const ul = $("list"); ul.innerHTML = "";
+  for (const r of recordings) {
+    const li = document.createElement("li");
+    const nm = document.createElement("span"); nm.className = "name";
+    nm.textContent = r.name;
+    const sm = document.createElement("small");
+    sm.textContent = `${r.secs.toFixed(1)} s, ${r.fs} Hz, peak ${r.peak.toFixed(2)}`;
+    nm.appendChild(sm);
+    const b = document.createElement("button"); b.type = "button"; b.textContent = "Save";
+    b.addEventListener("click", () => save(r));
+    li.append(nm, b); ul.appendChild(li);
+  }
+}
+
+async function save(r) {
+  const file = new File([r.blob], r.name, { type: "audio/wav" });
+  if (navigator.canShare && navigator.canShare({ files: [file] })) {
+    try { await navigator.share({ files: [file] }); return; }       // iOS: Save to Files or AirDrop to the laptop
+    catch (e) { if (e && e.name === "AbortError") return; }
+  }
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(r.blob); a.download = r.name;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 10000);
+}
+
+$("go").addEventListener("click", run);
+</script>
+</body>
+</html>
