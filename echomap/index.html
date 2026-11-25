@@ -41,6 +41,7 @@ button { font: 600 17px var(--sans); border-radius: 12px; border: 0; padding: 16
 button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 #go { background: var(--accent); color: var(--accent-fg); font-size: 19px; }
 #go:disabled, #test:disabled { opacity: 0.5; cursor: default; }
+.warnbox { border: 1px solid var(--warn); color: var(--warn); border-radius: 10px; padding: 10px 12px; font-size: 14px; }
 .secondary { background: var(--bg); color: var(--fg); border: 1px solid var(--line); font-size: 15px; padding: 12px; }
 .meter { height: 10px; border-radius: 5px; background: var(--line); overflow: hidden; }
 .meter > div { height: 100%; width: 0%; background: var(--accent); transition: width 60ms linear; }
@@ -70,12 +71,12 @@ li button { padding: 8px 12px; font-size: 14px; background: var(--bg); color: va
     <div class="seg three" role="radiogroup" aria-labelledby="mode-h">
       <input type="radio" name="mode" id="mode-p" value="play">
       <label for="mode-p"><b>Play only</b>Speaker phone</label>
-      <input type="radio" name="mode" id="mode-r" value="rec" checked>
+      <input type="radio" name="mode" id="mode-r" value="rec">
       <label for="mode-r"><b>Record only</b>Mic phone, 10 s</label>
-      <input type="radio" name="mode" id="mode-pr" value="playrec">
+      <input type="radio" name="mode" id="mode-pr" value="playrec" checked>
       <label for="mode-pr"><b>Play + record</b>One phone</label>
     </div>
-    <span class="tag">Two phones side by side: start Record only on one, then Play only on the other within 3 seconds. Play + record on one phone sends sound to the earpiece on iOS.</span>
+    <span class="tag">Use Safari. Play + record on one phone works there. The two-phone modes are a backup: start Record only on one phone, then Play only on the other within 3 seconds.</span>
     <label class="h" id="sig-h">Signal</label>
     <div class="seg" role="radiogroup" aria-labelledby="sig-h">
       <input type="radio" name="sig" id="sig-w" value="wideband" checked>
@@ -94,7 +95,16 @@ li button { padding: 8px 12px; font-size: 14px; background: var(--bg); color: va
     </div>
     <span class="tag">iOS can move sound to the earpiece while the mic is on. If a recording is too quiet, try another method and keep the one where the chirps come loudly from the bottom speaker.</span>
     <label class="h" for="label">Recording name</label>
-    <input type="text" id="label" value="wall_1.00m" autocomplete="off" autocapitalize="off" spellcheck="false">
+    <input type="text" id="label" value="wall_0.28m_r1" autocomplete="off" autocapitalize="off" spellcheck="false">
+    <label class="h" id="delay-h">Start delay</label>
+    <div class="seg three" role="radiogroup" aria-labelledby="delay-h">
+      <input type="radio" name="delay" id="d0" value="0">
+      <label for="d0"><b>None</b>Hand-held</label>
+      <input type="radio" name="delay" id="d5" value="5" checked>
+      <label for="d5"><b>5 s</b>Step away</label>
+      <input type="radio" name="delay" id="d8" value="8">
+      <label for="d8"><b>8 s</b>Step far away</label>
+    </div>
     <span class="tag">Put the true distance in the name, for example wall_0.75m or open_air.</span>
   </section>
 
@@ -102,6 +112,7 @@ li button { padding: 8px 12px; font-size: 14px; background: var(--bg); color: va
     <button id="go" type="button">Start</button>
     <div class="meter" aria-hidden="true"><div id="lvl"></div></div>
     <div id="status">Ready. Tap Start and allow the microphone.</div>
+    <div id="browser-warn" class="warnbox" hidden>This looks like Chrome on iPhone, which plays through the earpiece while recording. Open this page in Safari instead.</div>
   </section>
 
   <section>
@@ -219,6 +230,7 @@ async function run() {
 
     let durS;
     if (mode === "playrec" && pm === "element") {
+      await countdown();
       status("Recording. Playing chirps, keep still...");
       await new Promise(r => setTimeout(r, 300));
       el.pause(); el.currentTime = 0; el.muted = false;
@@ -230,6 +242,7 @@ async function run() {
       ab.copyToChannel(train, 0);
       const player = ctx.createBufferSource();
       player.buffer = ab; player.connect(ctx.destination);
+      await countdown();
       status("Recording. Playing chirps, keep still...");
       await new Promise(r => setTimeout(r, 300));
       player.start();
@@ -275,6 +288,15 @@ async function run() {
   }
 }
 
+async function countdown() {
+  // Gives the person who tapped Start time to step back, so their body is not an echo.
+  const n = Number(document.querySelector("input[name=delay]:checked").value);
+  for (let k = n; k > 0; k--) {
+    status(`Step back and stay still. Chirps start in ${k} s`, "warn");
+    await new Promise(r => setTimeout(r, 1000));
+  }
+}
+
 function renderList() {
   const ul = $("list"); ul.innerHTML = "";
   for (const r of recordings) {
@@ -303,6 +325,8 @@ async function save(r) {
 }
 
 $("go").addEventListener("click", run);
+// Chrome, Firefox and Edge on iOS report CriOS, FxiOS and EdgiOS in their user agent.
+if (/CriOS|FxiOS|EdgiOS/.test(navigator.userAgent)) $("browser-warn").hidden = false;
 
 </script>
 </body>
